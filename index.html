@@ -546,7 +546,7 @@
     <h1>FECHAMENTO DIÁRIO — GRUPO LONDRINO</h1>
     <div class="date-row">
       <label for="dateInput">Data:</label>
-      <input type="date" id="dateInput" value="2026-09-14">
+      <input type="date" id="dateInput" value="2026-09-15">
     </div>
     <div class="status-pill" id="statusPill">Carregando…</div>
 
@@ -909,7 +909,7 @@ const STORAGE_KEY = 'londrinoFechamentos';
 // descartado e substituído pelo seed novo, em vez de continuar exibindo valores antigos presos
 // no localStorage do usuário.
 const APORTES_SEED_VERSION = 3;
-let currentDate = '2026-09-14';
+let currentDate = '2026-09-15';
 let filterUnidade = '';
 let filterBanco = '';
 
@@ -2228,6 +2228,18 @@ function temAlteracaoNaoPublicada(date){
     return JSON.stringify(migrateDataset(local, seed)) !== JSON.stringify(migrateDataset(pub, seed));
   }catch(e){ return true; }
 }
+// Dia em que o painel deve abrir: o mais recente que existe — publicado ou rascunho local
+// ainda em andamento. Assim, publicado o fechamento de hoje, o link já abre nele amanhã,
+// sem precisar mexer no código.
+function ultimoDiaDisponivel(){
+  const eData = k => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(k);
+  const dias = new Set();
+  Object.keys(publicados || {}).filter(eData).forEach(d => dias.add(d));
+  Object.keys(loadAll() || {}).filter(eData).forEach(d => dias.add(d));
+  if(!dias.size) return null;
+  return [...dias].sort().pop();
+}
+
 function descartarRascunho(){
   if(!datasetPublicado(currentDate)){
     showToast('Este dia ainda não foi publicado — não há versão publicada para voltar.');
@@ -2364,7 +2376,11 @@ window.addEventListener('DOMContentLoaded', ()=>{
   loadDate(dateInput.value);
   // Busca o que está publicado e redesenha — assim a tela aparece na hora e o
   // dado compartilhado entra assim que chega, sem travar o carregamento.
-  carregarPublicados().then(()=>{ loadDate(dateInput.value); });
+  carregarPublicados().then(()=>{
+    const ultimo = ultimoDiaDisponivel();
+    if(ultimo) dateInput.value = ultimo;
+    loadDate(dateInput.value);
+  });
 });
 </script>
 
