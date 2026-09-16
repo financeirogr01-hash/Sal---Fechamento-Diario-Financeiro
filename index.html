@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fechamento Diário — Grupo Londrino</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --navy:#2B4899;
+    --navy-2:#1D3169;
+    --green:#16a34a;
+    --green-bg:#e8f8ee;
+    --red:#dc2626;
+    --red-bg:#fdecec;
+    --orange:#f59e0b;
+    --orange-bg:#fff4e0;
+    --blue:#2563eb;
+    --blue-bg:#eaf1fe;
+    --bg:#f2f4f7;
+    --card:#ffffff;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+    --radius:16px;
+    --shadow:0 1px 3px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.04);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Roboto,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:60px;
+  }
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:20px 16px 40px;
+  }
+  header.top{
+    text-align:center;
+    padding:22px 16px 26px;
+    background:linear-gradient(180deg,var(--navy) 0%, var(--navy-2) 100%);
+    color:#fff;
+    border-radius:0 0 20px 20px;
+    margin-bottom:20px;
+  }
+  header.top .brand{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    font-size:13px;
+    letter-spacing:.5px;
+    opacity:.9;
+    margin-bottom:14px;
+  }
+  header.top .brand svg{flex:0 0 auto;}
+  header.top h1{
+    font-size:20px;
+    margin:0 0 4px;
+    letter-spacing:.5px;
+  }
+  header.top .subtitle{font-size:13px; opacity:.85; margin-bottom:14px;}
+  .date-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .date-row label{font-size:12px; opacity:.85;}
+  .date-row input[type=date]{
+    border:none;
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:14px;
+    font-family:inherit;
+  }
+  .status-pill{
+    display:inline-block;
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,.15);
+    margin-top:8px;
+  }
+
+  section{margin-bottom:22px;}
+  .section-title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--navy);
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    margin:0 0 10px 4px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+  }
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  .grid.cols-5{grid-template-columns:repeat(5,1fr);}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:16px;
+    border:1px solid var(--border);
+  }
+  .card .label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    color:var(--muted);
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  .card .value{
+    font-size:20px;
+    font-weight:700;
+    color:var(--text);
+    border:none;
+    background:transparent;
+    width:100%;
+    font-family:inherit;
+    padding:0;
+  }
+  .card .value:focus{outline:2px solid var(--blue); outline-offset:2px; border-radius:4px;}
+  .card.tone-green .value{color:var(--green);}
+  .card.tone-red .value{color:var(--red);}
+  .card.tone-orange .value{color:var(--orange);}
+  .card.tone-blue{background:var(--navy); }
+  .card.tone-blue .label{color:#cbd8ea;}
+  .card.tone-blue .value{color:#fff;}
+  .card .hint{font-size:11px; color:var(--muted); margin-top:8px;}
+
+  .final-card{
+    grid-column:1/-1;
+    border-radius:var(--radius);
+    padding:20px;
+    text-align:center;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+  }
+  .final-card.positive{background:var(--green-bg); border-color:#bcebca;}
+  .final-card.negative{background:var(--red-bg); border-color:#f6c6c6;}
+  .final-card .label{font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); font-weight:700;}
+  .final-card .value{
+    font-size:32px;
+    font-weight:800;
+    background:transparent;
+    border:none;
+    text-align:center;
+    width:100%;
+    font-family:inherit;
+    margin:6px 0 8px;
+  }
+  .final-card.positive .value{color:var(--green);}
+  .final-card.negative .value{color:var(--red);}
+  .final-card .msg{font-size:13px; font-weight:600;}
+  .final-card.positive .msg{color:#0f7a37;}
+  .final-card.negative .msg{color:#a91f1f;}
+
+  .projecao-banner{
+    border-radius:var(--radius);
+    padding:16px 20px;
+    text-align:left;
+  }
+  .projecao-banner .label{font-size:12px; text-transform:uppercase; letter-spacing:.5px; font-weight:700; color:rgba(255,255,255,.85); margin-bottom:4px;}
+  .projecao-banner .value{font-size:26px; font-weight:800; color:#fff;}
+  .projecao-banner.positive{background:var(--green);}
+  .projecao-banner.negative{background:var(--red);}
+
+  .toggle-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--card);
+    border:1px solid var(--border);
+    color:var(--navy);
+    font-weight:600;
+    font-size:13px;
+    padding:9px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    margin-top:10px;
+  }
+  .toggle-btn:hover{background:#f8fafc;}
+  .toggle-btn .chev{transition:transform .2s;}
+  .toggle-btn.open .chev{transform:rotate(180deg);}
+
+  .detail{
+    display:none;
+    margin-top:14px;
+    scroll-margin-top:14px;
+    background:var(--card);
+    border-radius:var(--radius);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
+    padding:14px;
+    overflow-x:auto;
+  }
+  .detail.open{display:block;}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+    min-width:560px;
+  }
+  th,td{
+    padding:9px 8px;
+    text-align:left;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  th{
+    color:var(--muted);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.3px;
+  }
+  tfoot td{font-weight:700; border-top:2px solid var(--navy); border-bottom:none;}
+  td input, td select{
+    border:1px solid transparent;
+    background:transparent;
+    font-family:inherit;
+    font-size:13px;
+    width:100%;
+    padding:4px 6px;
+    border-radius:6px;
+    min-width:90px;
+  }
+  td input:focus, td select:focus{border-color:var(--blue); outline:none; background:#fff;}
+  .row-actions button{
+    border:none;
+    background:none;
+    color:var(--red);
+    cursor:pointer;
+    font-size:15px;
+  }
+  .add-row-btn{
+    margin-top:10px;
+    background:var(--blue-bg);
+    color:var(--blue);
+    border:none;
+    padding:7px 12px;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+  }
+
+  .note{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:8px;
+    line-height:1.5;
+  }
+
+  .bar-track{
+    width:100%;
+    height:10px;
+    background:#eef1f5;
+    border-radius:999px;
+    overflow:hidden;
+    margin-top:6px;
+  }
+  .bar-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--orange), #fbbf24);
+    border-radius:999px;
+    transition:width .3s;
+  }
+  .bar-labels{
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+    color:var(--muted);
+    margin-top:6px;
+  }
+
+  .filters{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    box-shadow:var(--shadow);
+  }
+  .filters .field{display:flex; flex-direction:column; gap:4px; flex:1; min-width:140px;}
+  .filters label{font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase;}
+  .filters select, .filters input{
+    padding:8px 10px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-family:inherit;
+    font-size:13px;
+  }
+
+  .actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+  }
+  .btn{
+    border:none;
+    padding:12px 18px;
+    border-radius:10px;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  .btn-primary{background:var(--navy); color:#fff;}
+  .btn-whatsapp{background:#25d366; color:#fff;}
+  .btn-outline{background:#fff; color:var(--navy); border:1px solid var(--border);}
+  .btn:active{transform:scale(.98);}
+
+  .alert{
+    background:var(--red-bg);
+    border:1px solid #f5b5b5;
+    color:#8a1f1f;
+    padding:12px 14px;
+    border-radius:12px;
+    font-size:13px;
+    margin-bottom:14px;
+    display:none;
+    line-height:1.6;
+  }
+  .alert.show{display:block;}
+  .alert strong{display:block; margin-bottom:4px;}
+
+  .toast{
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--navy);
+    color:#fff;
+    padding:10px 18px;
+    border-radius:10px;
+    font-size:13px;
+    opacity:0;
+    transition:all .25s;
+    z-index:50;
+    pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .savebar{
+    text-align:center;
+    font-size:11px;
+    color:var(--muted);
+    margin-top:6px;
+  }
+
+  .signal-card{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .signal-dot{
+    width:12px; height:12px;
+    border-radius:50%;
+    flex:0 0 auto;
+    background:var(--muted);
+  }
+  .signal-dot.green{background:var(--green);}
+  .signal-dot.yellow{background:var(--orange);}
+  .signal-dot.red{background:var(--red);}
+  .aporte-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 0;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+    gap:10px;
+  }
+  .aporte-row:last-child{border-bottom:none;}
+  .aporte-row-clicavel{cursor:pointer; border-radius:8px; margin:0 -8px; padding:8px; transition:background .12s;}
+  .aporte-row-clicavel:hover{background:var(--bg-2, #f4f6fa);}
+  .aporte-row .label{font-size:13px; color:var(--muted); font-weight:600; text-transform:none; letter-spacing:0; margin:0;}
+  .aporte-row input{
+    text-align:right;
+    font-weight:700;
+    font-size:14px;
+    border:1px solid transparent;
+    background:transparent;
+    font-family:inherit;
+    border-radius:6px;
+    padding:4px 6px;
+    width:140px;
+  }
+  .aporte-row input:focus{border-color:var(--blue); background:#fff; outline:none;}
+  .aporte-row.total{font-weight:800; font-size:15px; padding-top:10px; border-top:2px solid var(--navy); border-bottom:none;}
+  .aporte-row.total.positive input, .aporte-row.total.positive .val{color:var(--green);}
+  .aporte-row.total.negative input, .aporte-row.total.negative .val{color:var(--red);}
+  .aporte-row.total.zero input, .aporte-row.total.zero .val{color:var(--orange);}
+  .subnote{font-size:11px; color:var(--muted); margin-top:2px;}
+
+  .bank-card .label{margin-bottom:10px;}
+  .bank-field{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    padding:6px 0;
+    border-bottom:1px dashed var(--border);
+    font-size:12.5px;
+  }
+  .bank-field span{color:var(--muted); font-weight:600;}
+  .bank-field input{
+    text-align:right;
+    font-weight:700;
+    font-size:13px;
+    border:1px solid transparent;
+    background:transparent;
+    font-family:inherit;
+    border-radius:6px;
+    padding:3px 5px;
+    width:120px;
+    color:var(--text);
+  }
+  .bank-field input:focus{border-color:var(--blue); background:#fff; outline:none;}
+  .bank-final{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding-top:10px;
+    margin-top:6px;
+    border-top:2px solid var(--navy);
+    font-weight:800;
+    font-size:15px;
+  }
+  .bank-card.tone-green .bank-final{color:var(--green);}
+  .bank-card.tone-orange .bank-final{color:var(--orange);}
+  .bank-card .bank-final{color:var(--navy);}
+  .bank-card .subnote{margin-top:8px; line-height:1.5;}
+
+  .ranking-table{width:100%; max-width:100%; min-width:0; table-layout:fixed; border-collapse:collapse; font-size:13px;}
+  .ranking-table td{padding:5px 4px; border-bottom:1px solid var(--border); vertical-align:middle; overflow:hidden;}
+  .ranking-table tr:last-child td{border-bottom:none;}
+  .ranking-table .rk-pos{color:var(--muted); width:18px; font-weight:700;}
+  .ranking-table .rk-nome{font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .ranking-table .rk-valor{width:84px; text-align:right; white-space:nowrap; font-weight:700; font-size:12px;}
+  .ranking-table .rk-bar-wrap{padding-top:2px;}
+  .ranking-table .rk-bar-track{background:#eef0f3; border-radius:6px; height:6px; overflow:hidden; margin-top:3px;}
+  .ranking-table .rk-bar-fill{height:100%; border-radius:6px;}
+  .ranking-empty{color:var(--muted); font-size:13px; padding:6px 4px;}
+
+  @media (max-width:820px){
+    .grid{grid-template-columns:repeat(2,1fr);}
+    .grid.cols-3{grid-template-columns:repeat(2,1fr);}
+    .grid.cols-5{grid-template-columns:repeat(3,1fr);}
+    .grid.cols-4{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:520px){
+    .grid, .grid.cols-3, .grid.cols-2, .grid.cols-5, .grid.cols-4{grid-template-columns:1fr;}
+    .final-card .value{font-size:26px;}
+    header.top h1{font-size:17px;}
+  }
+
+  @media print{
+    body{background:#fff;}
+    .actions, .filters, .toggle-btn, .add-row-btn, .row-actions, .toast{display:none !important;}
+    .detail{display:block !important;}
+    .card, .final-card, .detail{box-shadow:none; border:1px solid #ccc;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <img src="data:image/png;base64,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" alt="" style="height:22px; width:auto; display:inline-block; vertical-align:-4px; margin-right:2px;">
+      RAGGA GESTÃO &amp; EDUCAÇÃO
+    </div>
+    <h1>FECHAMENTO DIÁRIO — GRUPO LONDRINO</h1>
+    <div class="date-row">
+      <label for="dateInput">Data:</label>
+      <input type="date" id="dateInput" value="2026-09-14">
+    </div>
+    <div class="status-pill" id="statusPill">Carregando…</div>
+  </header>
+
+  <div class="alert" id="alertBox"></div>
+
+  <div class="filters" style="margin-bottom:20px;">
+    <div class="field">
+      <label>Filtrar por unidade</label>
+      <select id="filterUnidade"><option value="">Todas as unidades</option></select>
+    </div>
+    <div class="field">
+      <label>Filtrar por banco</label>
+      <select id="filterBanco"><option value="">Todos os bancos</option></select>
+    </div>
+    <div class="field">
+      <label>Importar dados de outra data</label>
+      <input type="date" id="importDate">
+    </div>
+    <div class="field" style="justify-content:flex-end; flex-direction:row; align-items:flex-end;">
+      <button class="add-row-btn" style="height:36px;" onclick="importFromDate()">Importar</button>
+    </div>
+    <div class="field" style="justify-content:flex-end; flex-direction:row; align-items:flex-end;">
+      <button class="add-row-btn" style="height:36px;" onclick="restaurarDadosOriginais()" title="Descarta as edições salvas neste navegador para esta data e recarrega os valores originais do painel">↺ Restaurar dados originais desta data</button>
+    </div>
+  </div>
+
+  <div class="filters" style="margin-bottom:8px; align-items:center;">
+    <div class="field">
+      <label>Importar planilha (Excel ou CSV)</label>
+      <input type="file" id="planilhaInput" accept=".xlsx,.xls,.csv">
+    </div>
+    <div class="field" style="justify-content:flex-end; flex-direction:row; align-items:flex-end; gap:8px;">
+      <button class="toggle-btn" style="margin-top:0;" onclick="baixarModeloPlanilha()">⬇️ Baixar modelo de planilha</button>
+    </div>
+  </div>
+  <div class="note" id="planilhaStatus" style="margin:0 0 20px 4px;">
+    Sem planilha? Não tem problema — todos os campos abaixo são editáveis. É só digitar por cima dos valores; o painel recalcula e salva sozinho, automaticamente, a cada alteração.
+  </div>
+
+  <section>
+    <div class="section-title">1. Resumo do dia</div>
+    <div class="grid cols-5">
+      <div class="card">
+        <div class="label">Saldo inicial</div>
+        <input class="value money" id="saldoInicial" value="28114.78">
+        <div class="hint">somente contas Sicredi</div>
+      </div>
+      <div class="card tone-green">
+        <div class="label">Entradas</div>
+        <input class="value money" id="entradas" value="402234.65">
+        <div class="hint">sem transferências internas e aportes</div>
+      </div>
+      <div class="card tone-red">
+        <div class="label">Saídas</div>
+        <input class="value money" id="saidas" value="354559.13">
+        <div class="hint" id="pctSaidas">— % das entradas</div>
+      </div>
+      <div class="card tone-red">
+        <div class="label">Despesas urgentes</div>
+        <input class="value money" id="despesasUrgentes" value="0">
+        <div class="hint" id="pctDespUrg">— % das entradas</div>
+      </div>
+      <div class="card tone-blue">
+        <div class="label">Saldo final</div>
+        <div class="value" id="saldoFinalDisplay" style="font-size:20px;">R$ 0,00</div>
+        <div class="hint" style="color:#cbd8ea;">calculado automaticamente</div>
+      </div>
+    </div>
+
+    <div class="final-card" id="finalCard" style="margin-top:14px;">
+      <div class="label">Saldo final do dia</div>
+      <div class="value" id="finalCardValue">R$ 0,00</div>
+      <div class="msg" id="finalCardMsg">—</div>
+      <div class="msg" id="finalCardFormula" style="margin-top:2px; font-weight:400; opacity:.85;">Saldo inicial + Entradas − Saídas − Despesas urgentes</div>
+    </div>
+
+    <div class="section-title" style="margin-top:18px; font-size:15px;">Composição das saídas</div>
+    <div class="grid cols-5">
+      <div class="card">
+        <div class="label">CMV</div>
+        <input class="value money" id="compCmv" value="0">
+        <div class="hint" id="pctCompCmv">0% das saídas</div>
+      </div>
+      <div class="card">
+        <div class="label">CF</div>
+        <input class="value money" id="compCf" value="0">
+        <div class="hint" id="pctCompCf">0% das saídas</div>
+      </div>
+      <div class="card">
+        <div class="label">CMO</div>
+        <input class="value money" id="compCmo" value="0">
+        <div class="hint" id="pctCompCmo">0% das saídas</div>
+      </div>
+      <div class="card">
+        <div class="label">OPEX</div>
+        <input class="value money" id="compOpex" value="0">
+        <div class="hint" id="pctCompOpex">0% das saídas</div>
+      </div>
+      <div class="card">
+        <div class="label">Royalties</div>
+        <input class="value money" id="compRoyalties" value="0">
+        <div class="hint" id="pctCompRoyalties">0% das saídas</div>
+      </div>
+    </div>
+    <div class="note" id="compSaidasNote" style="margin:8px 0 0 4px;">Total da composição: <strong id="totCompSaidas">R$ 0,00</strong> — deve bater com as saídas operacionais informadas acima.</div>
+
+    <button class="toggle-btn" id="btnLojas" onclick="toggleDetail('detailLojas','btnLojas')">
+      <span class="chev">▾</span> Ver detalhamento por loja
+    </button>
+    <div class="detail" id="detailLojas">
+      <table>
+        <thead>
+          <tr>
+            <th>Unidade</th><th>Banco</th><th>Saldo inicial</th><th>Entradas</th><th>Saídas</th><th>Saldo final</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="lojasBody"></tbody>
+        <tfoot>
+          <tr>
+            <td>Total</td><td></td>
+            <td id="totLojaSaldoInicial">R$ 0,00</td>
+            <td id="totLojaEntradas">R$ 0,00</td>
+            <td id="totLojaSaidas">R$ 0,00</td>
+            <td id="totLojaSaldoFinal">R$ 0,00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+      <button class="add-row-btn" onclick="addLojaRow()">+ Adicionar loja</button>
+      <div class="note">Os totais desta tabela são comparados automaticamente com os valores do resumo do dia. Divergências aparecem no alerta no topo da página.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">2. Transferências entre contas</div>
+    <div class="card">
+      <div class="label">Total movimentado</div>
+      <input class="value money" id="transfTotal" value="520.14">
+      <div class="note">Movimentação interna do grupo, não considerada como receita ou despesa.</div>
+    </div>
+    <button class="toggle-btn" id="btnTransf" onclick="toggleDetail('detailTransf','btnTransf')">
+      <span class="chev">▾</span> Ver transferências por loja
+    </button>
+    <div class="detail" id="detailTransf">
+      <table>
+        <thead>
+          <tr><th>Unidade origem</th><th>Unidade destino</th><th>Valor</th><th>Descrição</th><th></th></tr>
+        </thead>
+        <tbody id="transfBody"></tbody>
+        <tfoot>
+          <tr><td colspan="2">Total</td><td id="totTransf">R$ 0,00</td><td></td><td></td></tr>
+        </tfoot>
+      </table>
+      <button class="add-row-btn" onclick="addTransfRow()">+ Adicionar transferência</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">3. Limites bancários</div>
+    <div class="grid cols-4">
+      <div class="card">
+        <div class="label">Limite total</div>
+        <input class="value money" id="limiteTotal" value="264600.00">
+      </div>
+      <div class="card tone-orange">
+        <div class="label">Limite em uso</div>
+        <input class="value money" id="limiteEmUso" value="210212.27">
+      </div>
+      <div class="card tone-red">
+        <div class="label">Limite excedente</div>
+        <input class="value money" id="limiteExcedente" value="25612.27">
+        <div class="hint">Uso acima do limite contratado</div>
+      </div>
+      <div class="card tone-green">
+        <div class="label">Limite disponível</div>
+        <input class="value money" id="limiteDisponivel" value="80000">
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <div class="label">Utilização do limite</div>
+      <div class="bar-track"><div class="bar-fill" id="limiteBar" style="width:0%;"></div></div>
+      <div class="bar-labels"><span id="limitePct">0% em uso</span><span id="limiteRestantePct">100% disponível</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">4. Disponibilidade total</div>
+    <div class="final-card positive" style="background:var(--blue-bg); border-color:#c7dafc;">
+      <div class="label">Saldo bancário + Limite disponível</div>
+      <div class="value" id="disponibilidadeTotal" style="color:var(--navy);">R$ 0,00</div>
+      <div class="msg" style="color:var(--navy); font-weight:600;">
+        Saldo final <span id="dispSaldo">R$ 0,00</span> + Limite disponível <span id="dispLimite">R$ 0,00</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">5. Aportes — GAMEL</div>
+    <div class="card" id="aportesCard">
+      <div class="aporte-row aporte-row-clicavel" onclick="filtrarAportes('Aporte recebido')" title="Ver o detalhamento dos aportes recebidos">
+        <span class="label">🟢 Aportes recebidos</span>
+        <input class="money" id="aporteRecebidos" value="149158.92" onclick="event.stopPropagation();">
+      </div>
+      <div class="aporte-row aporte-row-clicavel" onclick="filtrarAportes('Aporte enviado')" title="Ver o detalhamento dos aportes enviados">
+        <span class="label">🔴 Aportes enviados</span>
+        <input class="money" id="aporteEnviados" value="149158.92" onclick="event.stopPropagation();">
+      </div>
+      <div class="aporte-row total" id="aporteResultadoRow">
+        <span class="label" style="display:flex; align-items:center; gap:8px;"><span class="signal-dot" id="aporteSignal"></span> Resultado líquido</span>
+        <span class="val" id="aporteResultado">R$ 0,00</span>
+      </div>
+      <div class="note" style="margin-top:8px;">Lançamentos da categoria "Aporte — Transf. entre contas (GAMEL)" do dia, direto do extrato bancário — <strong>Entrada</strong> em "Aportes recebidos", <strong>Saída</strong> em "Aportes enviados" (25 operações, 50 lançamentos). É dinheiro circulando entre contas do próprio grupo, por isso o resultado líquido fecha em R$ 0,00.</div>
+
+      <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line);">
+        <div class="label" style="margin-bottom:8px;">Ranking por loja — quem mais empresta e quem mais recebe</div>
+        <div class="grid cols-2" style="gap:16px; min-width:0;">
+          <div style="min-width:0;">
+            <div class="hint" style="margin-bottom:6px; font-weight:700; color:var(--green);">🟢 Mais emprestam</div>
+            <table class="ranking-table"><tbody id="rankingEmprestam"></tbody></table>
+          </div>
+          <div style="min-width:0;">
+            <div class="hint" style="margin-bottom:6px; font-weight:700; color:var(--red);">🔴 Mais recebem</div>
+            <table class="ranking-table"><tbody id="rankingRecebem"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:none;">
+        <input id="aporteSaldoInicial" value="1987.63">
+        <input id="aporteOutrasReceitas" value="1637.50">
+        <span id="aporteSaldoFinal"></span>
+        <div id="movimentacaoTotalNote">
+          <strong id="movEntradaValor"></strong>
+          <strong id="movSaidaValor"></strong>
+          <div id="movComparacaoMsg"></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="toggle-btn" id="btnAportes" onclick="abrirTodosAportes()">
+      <span class="chev">▾</span> Ver detalhamento dos aportes
+    </button>
+    <div class="detail" id="detailAportes">
+      <div class="note" style="margin:0 0 8px 2px;">Cada uma das 25 operações de aporte do dia aparece aqui em 2 lançamentos — a ponta que saiu da conta de origem e a ponta que entrou na conta de destino (GAMEL) — exatamente como no extrato bancário, por isso o total abaixo bate com o card acima.</div>
+      <div class="note" id="aportesFiltroLabel" style="margin:0 0 8px 2px; display:none;"></div>
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Origem</th><th>Destino</th><th>Unidade</th><th>Banco</th><th>Valor</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th></th></tr>
+        </thead>
+        <tbody id="aportesBody"></tbody>
+        <tfoot>
+          <tr><td colspan="5">Total dos lançamentos: recebido / enviado (deve bater com o card acima)</td><td colspan="2" id="totAportes">R$ 0,00 / R$ 0,00</td><td colspan="3"></td></tr>
+        </tfoot>
+      </table>
+      <button class="add-row-btn" onclick="addAporteRow()">+ Adicionar lançamento</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">6. Fechamento real — conferência com o extrato bancário</div>
+    <div class="note" style="margin:-4px 0 12px 4px;">
+      O "Resumo do dia" (seção 1) é a visão operacional: saldo inicial só de Sicredi, entradas/saídas de todos os bancos, mas sem aportes e sem transferências. Aqui embaixo está o fechamento real de cada banco — saldo inicial + entradas − saídas = saldo final — batendo 1:1 com o extrato, aportes e transferências inclusos.
+    </div>
+    <div class="grid cols-3">
+      <div class="card tone-green bank-card">
+        <div class="label">🟢 Sicredi — fechamento real</div>
+        <div class="bank-field"><span>Saldo inicial</span><input class="money bank-input" id="realSicrediSI" value="28114.78"></div>
+        <div class="bank-field"><span>Entradas reais (tudo incluso)</span><input class="money bank-input" id="realSicrediEN" value="547778.85"></div>
+        <div class="bank-field"><span>Saídas reais (tudo incluso)</span><input class="money bank-input" id="realSicrediSA" value="498602.48"></div>
+        <div class="bank-final"><span>Saldo final real</span><span id="realSicrediFinal">R$ 0,00</span></div>
+        <div class="subnote" id="realSicrediBridge"></div>
+      </div>
+      <div class="card tone-orange bank-card">
+        <div class="label">🟠 Bradesco — fechamento real</div>
+        <div class="bank-field"><span>Saldo inicial</span><input class="money bank-input" id="realBradescoSI" value="-159015.50"></div>
+        <div class="bank-field"><span>Entradas reais</span><input class="money bank-input" id="realBradescoEN" value="103.35"></div>
+        <div class="bank-field"><span>Saídas reais</span><input class="money bank-input" id="realBradescoSA" value="53.41"></div>
+        <div class="bank-final"><span>Saldo final real</span><span id="realBradescoFinal">R$ 0,00</span></div>
+        <div class="subnote">Contas operando dentro do limite (cheque especial) — por isso o saldo negativo.</div>
+      </div>
+      <div class="card bank-card">
+        <div class="label">⚪ Inter — fechamento real</div>
+        <div class="bank-field"><span>Saldo inicial</span><input class="money bank-input" id="realInterSI" value="-3992398.98"></div>
+        <div class="bank-field"><span>Entradas reais</span><input class="money bank-input" id="realInterEN" value="4031.51"></div>
+        <div class="bank-field"><span>Saídas reais</span><input class="money bank-input" id="realInterSA" value="5635.71"></div>
+        <div class="bank-final"><span>Saldo final real</span><span id="realInterFinal">R$ 0,00</span></div>
+        <div class="subnote">Conferido com o extrato: saldo inicial e entradas batem. As saídas reais (R$ 5.635,71) incluem os R$ 5.525,57 de aportes e R$ 110,14 de transferências que saíram por aqui — no extrato do banco esse valor aparece "desmarcado" e o "Saiu" some como R$ 0,00, por isso o saldo final não fecha lá; aqui incluímos para fechar certinho. Inclui também a conta consolidadora Vespa Distribuidora (Serbase Food), com saldo negativo de R$ 3.980.098,85 — provável conta de tesouraria/matriz do grupo, não específica das lojas do Grupo Londrino.</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px; text-align:center;">
+      <div class="label">Total consolidado (Sicredi + Bradesco + Inter)</div>
+      <div class="value" id="realTotalFinal" style="font-size:20px;">R$ 0,00</div>
+      <div class="subnote">Dominado pela conta consolidadora do Inter — use o card Sicredi acima como referência do caixa operacional real do Grupo Londrino.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">7. Projeção da semana</div>
+    <div class="card" id="projecaoCard">
+      <div class="aporte-row">
+        <span class="label">Saldo inicial</span>
+        <input class="money" id="projSaldoInicial" value="0">
+      </div>
+      <div class="aporte-row">
+        <span class="label" style="color:var(--green);">Receita prevista</span>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <span style="color:var(--green); font-weight:700;">+</span>
+          <input class="money" id="projReceitaPrevista" value="0" style="color:var(--green);">
+        </div>
+      </div>
+      <div class="aporte-row">
+        <span class="label" style="color:var(--red);">Despesa prevista</span>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <span style="color:var(--red); font-weight:700;">−</span>
+          <input class="money" id="projDespesaPrevista" value="0" style="color:var(--red);">
+        </div>
+      </div>
+      <div class="aporte-row">
+        <span class="label" style="color:var(--red);">Despesas urgentes</span>
+        <input class="money" id="projDespesasUrgentes" value="0" style="color:var(--red);">
+      </div>
+    </div>
+    <div class="projecao-banner positive" id="projecaoBanner" style="margin-top:12px;">
+      <div class="label">Saldo projetado</div>
+      <div class="value" id="projSaldoProjetado">R$ 0,00</div>
+    </div>
+  </section>
+
+  <section class="actions">
+    <button class="btn btn-primary" onclick="salvarDados()">💾 Salvar dados</button>
+    <button class="btn btn-outline" onclick="exportarPDF()">📄 Exportar PDF</button>
+    <button class="btn btn-whatsapp" onclick="copiarWhatsApp()">💬 Copiar para WhatsApp</button>
+  </section>
+  <div class="savebar" id="saveBar"></div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   FECHAMENTO DIÁRIO — GRUPO LONDRINO
+   Painel financeiro autônomo (HTML + CSS + JS)
+   Persistência: localStorage (chave londrinoFechamentos)
+   ========================================================= */
+
+const STORAGE_KEY = 'londrinoFechamentos';
+// Sobe este número sempre que os valores "corretos" de aportesGamel no seed abaixo forem
+// corrigidos — qualquer dado salvo no navegador com uma versão antiga é automaticamente
+// descartado e substituído pelo seed novo, em vez de continuar exibindo valores antigos presos
+// no localStorage do usuário.
+const APORTES_SEED_VERSION = 3;
+let currentDate = '2026-09-14';
+let filterUnidade = '';
+let filterBanco = '';
+
+// ---------- Regras permanentes de classificação (aplicadas a cada extrato importado) ----------
+// 1) Saldo inicial considera somente contas Sicredi (Bradesco e Inter ficam de fora do saldo inicial).
+// 2) Entradas do Bradesco entram normalmente como receita operacional.
+// 3) Saídas de "mora/encargos" do Bradesco (uso de cheque especial) NÃO entram nas saídas operacionais
+//    (não aparecem em nenhum card do painel; ficam de fora do resultado por definição).
+// 4) Na conta GAMEL, somente a categoria "Aporte — Transferência entre contas (GAMEL)" é tratada como aporte
+//    (fica fora do resultado operacional). As demais categorias da GAMEL seguem como receita/despesa normal.
+// 5) Transferências internas entre lojas ficam fora das entradas/saídas operacionais.
+
+// ---------- Dataset padrão — 20/08/2026 (seed histórico) ----------
+function defaultDataset(){
+  return {
+    resumo: { saldoInicial: 486334.07, entradas: 151700.73, saidas: 494234.16 },
+    despesasUrgentes: 0,
+    composicaoSaidas: { cmv: 0, cf: 0, cmo: 0, opex: 0, royalties: 0 },
+    lojas: [],
+    transferencias: { total: 127644.00, lista: [] },
+    limites: { total: 264600.00, emUso: 154679.58, excedente: 0, disponivel: 109920.42 },
+    aportesGamel: { saldoInicial: 0, recebidos: 0, enviados: 0, outrasReceitas: 0, lista: [] },
+    projecaoSemana: { saldoInicial: 0, receitaPrevista: 0, despesaPrevista: 0, despesasUrgentes: 0 },
+    fechamentoReal: {
+      sicredi: { saldoInicial: 486334.07, entradas: 151700.73, saidas: 494234.16 },
+      bradesco: { saldoInicial: 0, entradas: 0, saidas: 0 },
+      inter: { saldoInicial: 0, entradas: 0, saidas: 0 }
+    }
+  };
+}
+
+// ---------- Dataset — 14/09/2026 (fechamento real, extrato importado) ----------
+function dataset20260914(){
+  return {
+    resumo: { saldoInicial: 28114.78, entradas: 402234.65, saidas: 354559.13 },
+    despesasUrgentes: 0,
+    composicaoSaidas: { cmv: 0, cf: 0, cmo: 0, opex: 0, royalties: 0 },
+    lojas: [{"unidade": "BIGGS 01 — Big Fome Lanches LTDA", "banco": "Inter Empresas", "saldoInicial": 0.0, "entradas": 3018.48, "saidas": 0.0}, {"unidade": "BIGGS 01 — Marti Foods LTDA", "banco": "Sicredi", "saldoInicial": 2481.76, "entradas": 32724.59, "saidas": 22174.29}, {"unidade": "BIGGS 02", "banco": "Sicredi", "saldoInicial": 1621.03, "entradas": 30834.73, "saidas": 18913.24}, {"unidade": "BIGGS 03", "banco": "Sicredi", "saldoInicial": 609.28, "entradas": 13249.58, "saidas": 16588.45}, {"unidade": "BIGGS 04 — Agape Foods LTDA", "banco": "Bradesco Empresas", "saldoInicial": 0.0, "entradas": 49.94, "saidas": 0.0}, {"unidade": "BIGGS 04 — Agape Foods LTDA", "banco": "Sicredi", "saldoInicial": 1983.78, "entradas": 35370.99, "saidas": 36252.1}, {"unidade": "BIGGS 04 — Madriom Servicos Terceirizados LTDA", "banco": "Sicredi", "saldoInicial": 0.21, "entradas": 0.0, "saidas": 248.5}, {"unidade": "BIGGS 05 — Chema Foods LTDA", "banco": "Sicredi", "saldoInicial": 2974.65, "entradas": 41011.49, "saidas": 25071.74}, {"unidade": "BIGGS 05 — Paladar Servicos Terceirizados LTDA", "banco": "Sicredi", "saldoInicial": 100.64, "entradas": 0.0, "saidas": 437.81}, {"unidade": "BIGGS 06 — Corn Food Comercio De Alimentos Ltd", "banco": "Inter Empresas", "saldoInicial": 0.0, "entradas": 132.3, "saidas": 0.0}, {"unidade": "BIGGS 06 — Veri Foods LTDA", "banco": "Bradesco Empresas", "saldoInicial": 0.0, "entradas": 53.41, "saidas": 0.0}, {"unidade": "BIGGS 06 — Veri Foods LTDA", "banco": "Sicredi", "saldoInicial": 769.9, "entradas": 8887.53, "saidas": 18590.12}, {"unidade": "BIGGS 07 E AÇAI — Euciva Servicos Terceirizados LTDA", "banco": "Sicredi", "saldoInicial": 0.69, "entradas": 0.0, "saidas": 410.0}, {"unidade": "BIGGS 07 E AÇAI — Sica Foods LTDA", "banco": "Sicredi", "saldoInicial": 2464.5, "entradas": 41067.04, "saidas": 34823.87}, {"unidade": "BIGGS 08 E 09 — Amgeza Foods Comercio De Alimentos", "banco": "Inter Empresas", "saldoInicial": 0.0, "entradas": 650.86, "saidas": 0.0}, {"unidade": "BIGGS 08 E 09 — Bruti Foods LTDA", "banco": "Sicredi", "saldoInicial": 1163.25, "entradas": 16309.57, "saidas": 17961.19}, {"unidade": "BIGGS 10", "banco": "Sicredi", "saldoInicial": 1358.62, "entradas": 15792.26, "saidas": 29184.41}, {"unidade": "BIGGS 11", "banco": "Sicredi", "saldoInicial": 1177.97, "entradas": 20668.19, "saidas": 12393.85}, {"unidade": "BIGGS 12", "banco": "Sicredi", "saldoInicial": 1340.13, "entradas": 17658.11, "saidas": 16060.3}, {"unidade": "BIGGS 13", "banco": "Sicredi", "saldoInicial": 2065.33, "entradas": 31161.84, "saidas": 16666.4}, {"unidade": "DELLIRIS 01 (IS01)", "banco": "Inter Empresas", "saldoInicial": 0.0, "entradas": 0.0, "saidas": 0.0}, {"unidade": "DELLIRIS 02 (IS02)", "banco": "Inter Empresas", "saldoInicial": 0.0, "entradas": 0.0, "saidas": 0.0}, {"unidade": "ISAIAS 01 — Dona Food Comercio De Alimentos Ltd", "banco": "Inter Empresas", "saldoInicial": 0.0, "entradas": 0.0, "saidas": 0.0}, {"unidade": "ISAIAS 01 — Elma Foods LTDA", "banco": "Sicredi", "saldoInicial": 2718.33, "entradas": 42405.21, "saidas": 53070.99}, {"unidade": "ISAIAS 01 — Paleza Servicos Terceirizados LTDA", "banco": "Sicredi", "saldoInicial": 108.18, "entradas": 0.0, "saidas": 100.0}, {"unidade": "ISAIAS 02", "banco": "Sicredi", "saldoInicial": 1200.36, "entradas": 23362.8, "saidas": 10085.19}, {"unidade": "ISAIAS 03", "banco": "Sicredi", "saldoInicial": 941.85, "entradas": 17357.2, "saidas": 10375.69}, {"unidade": "MAPOLI", "banco": "Sicredi", "saldoInicial": 291.51, "entradas": 3029.53, "saidas": 6061.27}, {"unidade": "ROBS", "banco": "Sicredi", "saldoInicial": 654.88, "entradas": 5571.63, "saidas": 9089.72}, {"unidade": "VESPA DISTRIBUIDORA", "banco": "Inter Empresas", "saldoInicial": 0.0, "entradas": 229.87, "saidas": 0.0}, {"unidade": "GAMEL — Gamel Servicos Terceirizados LTDA", "banco": "Sicredi", "saldoInicial": 1987.63, "entradas": 1637.5, "saidas": 0.0}, {"unidade": "Ajuste de consolidação (contas Sicredi sem movimentação no dia)", "banco": "Sicredi", "saldoInicial": 100.3, "entradas": 0, "saidas": 0}],
+    transferencias: { total: 520.14, lista: [{"origem": "Dell'Iris 01 (IS01) — 01 Del Hub Foods", "destino": "Isaias 01 — Elma Foods", "valor": 35.14, "descricao": "Pix enviado — Elma Foods Ltda"}, {"origem": "Dell'Iris 02 (IS02) — 02 Del Hub Foods", "destino": "Isaias 02 — Madri Foods", "valor": 75.0, "descricao": "Pix enviado — Madri Foods Ltda"}, {"origem": "Biggs 07 e Açaí — Sica Foods", "destino": "Biggs 07 e Açaí — Euciva Serviços Terceirizados", "valor": 410.0, "descricao": "Pagamento Pix — Euciva Serviços Terceirizados"}] },
+    limites: { total: 264600.00, emUso: 210212.27, excedente: 25612.27, disponivel: 80000.00 },
+    aportesGamel: {
+      _v: APORTES_SEED_VERSION,
+      saldoInicial: 1987.63,
+      recebidos: 149158.92,
+      enviados: 149158.92,
+      outrasReceitas: 1637.50,
+      lista: [{"data": "14/09/2026", "origem": "Amgeza Foods Comercio De Alimentos", "destino": "GAMEL", "unidade": "BIGGS 08 E 09", "banco": "Inter Empresas", "valor": 594.36, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 42874031000111 Amgeza Foods Come", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Corn Food Comercio De Alimentos Ltd", "destino": "GAMEL", "unidade": "BIGGS 06", "banco": "Inter Empresas", "valor": 251.47, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 42649933000154 Corn Food Comerci", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Dona Food Comercio De Alimentos Ltd", "destino": "GAMEL", "unidade": "ISAIAS 01", "banco": "Inter Empresas", "valor": 408.4, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 44224264000102 Dona Food Comerci", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Big Fome Lanches LTDA", "destino": "GAMEL", "unidade": "BIGGS 01", "banco": "Inter Empresas", "valor": 4010.4, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 14882853000109 Big Fome Lanches", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Serbase Food Comercio Atacadista De", "destino": "GAMEL", "unidade": "VESPA DISTRIBUIDORA", "banco": "Inter Empresas", "valor": 260.94, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 03992652000148 Serbase Food Come", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Chema Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 05", "banco": "Sicredi", "valor": 12500.0, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 58420923000182 Chema Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Madri Foods LTDA", "destino": "GAMEL", "unidade": "ISAIAS 02", "banco": "Sicredi", "valor": 12000.0, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 58420201000128 Madri Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Sica Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 07 E AÇAI", "banco": "Sicredi", "valor": 2500.0, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 58423590000145 Sica Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Japi Foods LTDA", "destino": "GAMEL", "unidade": "ISAIAS 03", "banco": "Sicredi", "valor": 6900.0, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 60403158000134 Japi Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Demaqui Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 11", "banco": "Sicredi", "valor": 7900.0, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 59649819000127 Demaqui Foods Ltd", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Fusi Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 02", "banco": "Sicredi", "valor": 8250.0, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 59184707000148 Fusi Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Marti Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 01", "banco": "Sicredi", "valor": 7400.0, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 60663917000106 Marti Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Rama Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 13", "banco": "Sicredi", "valor": 10000.0, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Recebimento Pix 60977372000102 Rama Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Agape Foods LTDA", "unidade": "BIGGS 04", "banco": "Sicredi", "valor": -5797.3, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 58420847000105 Agape Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Elma Foods LTDA", "unidade": "ISAIAS 01", "banco": "Sicredi", "valor": -16539.95, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 60663757000197 Elma Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Paladar Servicos Terceirizados LTDA", "unidade": "BIGGS 05", "banco": "Sicredi", "valor": -337.2, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 57895581000194 Paladar Servicos Te", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Bruti Foods LTDA", "unidade": "BIGGS 08 E 09", "banco": "Sicredi", "valor": -8863.25, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 58420920000149 Bruti Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Lana Foods LTDA", "unidade": "BIGGS 12", "banco": "Sicredi", "valor": -794.1, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 60928833000149 Lana Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Panti Foods LTDA", "unidade": "BIGGS 10", "banco": "Sicredi", "valor": -19299.35, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 60663807000136 Panti Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Pigui Foods LTDA", "unidade": "BIGGS 03", "banco": "Sicredi", "valor": -4353.85, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 58423546000135 Pigui Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Luama Foods Comercio De Alimentos LTDA", "unidade": "ROBS", "banco": "Sicredi", "valor": -5111.3, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 52934334000136 Luama Foods Comerci", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Madriom Servicos Terceirizados LTDA", "unidade": "BIGGS 04", "banco": "Sicredi", "valor": -219.8, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 57894788000144 Madriom Servicos Te", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Nemaom Foods LTDA", "unidade": "MAPOLI", "banco": "Sicredi", "valor": -3222.55, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 57895291000140 Nemaom Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Veri Foods LTDA", "unidade": "BIGGS 06", "banco": "Sicredi", "valor": -11506.2, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 58423712000101 Veri Foods LTDA", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Madriom Servicos Terceirizados LTDA", "unidade": "BIGGS 04", "banco": "Sicredi", "valor": -138.5, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pagamento Pix 57894788000144 Madriom Servicos Te", "perspectiva": "gamel"}, {"data": "14/09/2026", "origem": "Serbase Food Comercio Atacadista De", "destino": "GAMEL", "unidade": "VESPA DISTRIBUIDORA", "banco": "Inter Empresas", "valor": -260.94, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pix enviado  - Gamel Servicos Terceirizados Ltda", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Amgeza Foods Comercio De Alimentos", "destino": "GAMEL", "unidade": "BIGGS 08 E 09", "banco": "Inter Empresas", "valor": -594.36, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pix enviado  - Gamel Servicos Terceirizados Ltda", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Dona Food Comercio De Alimentos Ltd", "destino": "GAMEL", "unidade": "ISAIAS 01", "banco": "Inter Empresas", "valor": -408.4, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pix enviado  - Gamel Servicos Terceirizados Ltda", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Big Fome Lanches LTDA", "destino": "GAMEL", "unidade": "BIGGS 01", "banco": "Inter Empresas", "valor": -4010.4, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pix enviado  - Gamel Servicos Terceirizados Ltda", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Corn Food Comercio De Alimentos Ltd", "destino": "GAMEL", "unidade": "BIGGS 06", "banco": "Inter Empresas", "valor": -251.47, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "Pix enviado  - Gamel Servicos Terceirizados Ltda", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Agape Foods LTDA", "unidade": "BIGGS 04", "banco": "Sicredi", "valor": 5797.3, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Bruti Foods LTDA", "unidade": "BIGGS 08 E 09", "banco": "Sicredi", "valor": 8863.25, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Chema Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 05", "banco": "Sicredi", "valor": -12500.0, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Demaqui Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 11", "banco": "Sicredi", "valor": -7900.0, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Elma Foods LTDA", "unidade": "ISAIAS 01", "banco": "Sicredi", "valor": 16539.95, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Fusi Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 02", "banco": "Sicredi", "valor": -8250.0, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Japi Foods LTDA", "destino": "GAMEL", "unidade": "ISAIAS 03", "banco": "Sicredi", "valor": -6900.0, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Lana Foods LTDA", "unidade": "BIGGS 12", "banco": "Sicredi", "valor": 794.1, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Luama Foods Comercio De Alimentos LTDA", "unidade": "ROBS", "banco": "Sicredi", "valor": 5111.3, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Madri Foods LTDA", "destino": "GAMEL", "unidade": "ISAIAS 02", "banco": "Sicredi", "valor": -12000.0, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Madriom Servicos Terceirizados LTDA", "unidade": "BIGGS 04", "banco": "Sicredi", "valor": 219.8, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Madriom Servicos Terceirizados LTDA", "unidade": "BIGGS 04", "banco": "Sicredi", "valor": 138.5, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Marti Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 01", "banco": "Sicredi", "valor": -7400.0, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Nemaom Foods LTDA", "unidade": "MAPOLI", "banco": "Sicredi", "valor": 3222.55, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Paladar Servicos Terceirizados LTDA", "unidade": "BIGGS 05", "banco": "Sicredi", "valor": 337.2, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Panti Foods LTDA", "unidade": "BIGGS 10", "banco": "Sicredi", "valor": 19299.35, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Pigui Foods LTDA", "unidade": "BIGGS 03", "banco": "Sicredi", "valor": 4353.85, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Rama Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 13", "banco": "Sicredi", "valor": -10000.0, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "Sica Foods LTDA", "destino": "GAMEL", "unidade": "BIGGS 07 E AÇAI", "banco": "Sicredi", "valor": -2500.0, "tipo": "Aporte enviado", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC", "perspectiva": "loja"}, {"data": "14/09/2026", "origem": "GAMEL", "destino": "Veri Foods LTDA", "unidade": "BIGGS 06", "banco": "Sicredi", "valor": 11506.2, "tipo": "Aporte recebido", "categoria": "Aporte — Transf. entre contas (GAMEL)", "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE", "perspectiva": "loja"}]
+    },
+    projecaoSemana: { saldoInicial: 0, receitaPrevista: 0, despesaPrevista: 0, despesasUrgentes: 0 },
+    fechamentoReal: {
+      sicredi: { saldoInicial: 28114.78, entradas: 547778.85, saidas: 498602.48 },
+      bradesco: { saldoInicial: -159015.50, entradas: 103.35, saidas: 53.41 },
+      inter: { saldoInicial: -3992398.98, entradas: 4031.51, saidas: 5635.71 }
+    }
+  };
+}
+
+// ---------- Storage helpers ----------
+function loadAll(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveAll(all){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(all)); }catch(e){}
+}
+function blankDataset(){
+  return {
+    resumo:{saldoInicial:0,entradas:0,saidas:0},
+    despesasUrgentes:0,
+    composicaoSaidas:{cmv:0,cf:0,cmo:0,opex:0,royalties:0},
+    lojas:[],
+    transferencias:{total:0,lista:[]},
+    limites:{total:0,emUso:0,excedente:0,disponivel:0},
+    aportesGamel:{saldoInicial:0,recebidos:0,enviados:0,outrasReceitas:0,lista:[]},
+    projecaoSemana:{saldoInicial:0,receitaPrevista:0,despesaPrevista:0,despesasUrgentes:0},
+    fechamentoReal:{
+      sicredi:{saldoInicial:0,entradas:0,saidas:0},
+      bradesco:{saldoInicial:0,entradas:0,saidas:0},
+      inter:{saldoInicial:0,entradas:0,saidas:0}
+    }
+  };
+}
+// Dataset "de referência" para uma data: os valores corretos conhecidos (seed) para 20/08 e 14/09,
+// ou um modelo zerado para qualquer outra data.
+function seedFor(date){
+  if(date === '2026-08-20') return defaultDataset();
+  if(date === '2026-09-14') return dataset20260914();
+  return blankDataset();
+}
+// Preenche qualquer campo que não exista ainda em um dado salvo anteriormente no localStorage —
+// usando o seed da própria data como base (não zero), para não perder os valores corretos já
+// calculados quando uma seção nova (como o Fechamento real) é adicionada ao painel depois que o
+// usuário já tinha dados salvos no navegador daquele dia.
+function migrateDataset(data, seed){
+  seed = seed || blankDataset();
+  const out = JSON.parse(JSON.stringify(seed));
+  if(!data || typeof data !== 'object') return out;
+  if(data.resumo) out.resumo = Object.assign({}, seed.resumo, data.resumo);
+  out.despesasUrgentes = (typeof data.despesasUrgentes === 'number') ? data.despesasUrgentes : seed.despesasUrgentes;
+  if(data.composicaoSaidas) out.composicaoSaidas = Object.assign({}, seed.composicaoSaidas, data.composicaoSaidas);
+  if(Array.isArray(data.lojas)) out.lojas = data.lojas;
+  if(data.transferencias){
+    out.transferencias = Object.assign({}, seed.transferencias, data.transferencias);
+    out.transferencias.lista = Array.isArray(data.transferencias.lista) ? data.transferencias.lista : seed.transferencias.lista;
+  }
+  if(data.limites) out.limites = Object.assign({}, seed.limites, data.limites);
+  if(data.aportesGamel){
+    const seedVersaoNova = seed.aportesGamel && seed.aportesGamel._v && data.aportesGamel._v !== seed.aportesGamel._v;
+    if(seedVersaoNova){
+      // Os valores de referência de aportesGamel foram corrigidos depois que este navegador
+      // salvou dados antigos — descarta o que estava salvo e usa o seed atualizado.
+      out.aportesGamel = JSON.parse(JSON.stringify(seed.aportesGamel));
+    } else {
+      out.aportesGamel = Object.assign({}, seed.aportesGamel, data.aportesGamel);
+      out.aportesGamel.lista = Array.isArray(data.aportesGamel.lista) ? data.aportesGamel.lista : seed.aportesGamel.lista;
+    }
+  }
+  if(data.projecaoSemana) out.projecaoSemana = Object.assign({}, seed.projecaoSemana, data.projecaoSemana);
+  if(data.fechamentoReal){
+    out.fechamentoReal = {
+      sicredi: Object.assign({}, seed.fechamentoReal.sicredi, data.fechamentoReal.sicredi),
+      bradesco: Object.assign({}, seed.fechamentoReal.bradesco, data.fechamentoReal.bradesco),
+      inter: Object.assign({}, seed.fechamentoReal.inter, data.fechamentoReal.inter)
+    };
+  } // se não existir no dado salvo, out.fechamentoReal já fica com o valor do seed
+  return out;
+}
+function getDataset(date){
+  const all = loadAll();
+  const seed = seedFor(date);
+  if(all[date]) return migrateDataset(all[date], seed);
+  return seed;
+}
+function setDataset(date, data){
+  const all = loadAll();
+  all[date] = data;
+  saveAll(all);
+}
+
+// ---------- Formatação BRL ----------
+function formatBRL(num){
+  if(isNaN(num)) num = 0;
+  return num.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+function brlInput(num){
+  // Igual a formatBRL, mas sem o prefixo "R$" e sem espaços estranhos entre o sinal e o número
+  return formatBRL(num).replace(/[Rr]\$/,'').replace(/[\s\u00A0]+/g,'');
+}
+function parseBRL(str){
+  if(typeof str === 'number') return str;
+  if(!str) return 0;
+  let s = String(str).trim();
+  s = s.replace(/[Rr]\$/,'');
+  // remove todo tipo de espaço (normal, nbsp, etc.) que pode ficar entre o sinal e o número
+  s = s.replace(/[\s\u00A0]+/g,'');
+  if(s.indexOf(',') > -1){
+    s = s.replace(/\./g,'').replace(',', '.');
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+// ---------- Estado atual em memória ----------
+let state = null;
+
+function readInputsToState(){
+  state.resumo.saldoInicial = parseBRL(document.getElementById('saldoInicial').value);
+  state.resumo.entradas     = parseBRL(document.getElementById('entradas').value);
+  state.resumo.saidas       = parseBRL(document.getElementById('saidas').value);
+  state.despesasUrgentes    = parseBRL(document.getElementById('despesasUrgentes').value);
+  state.composicaoSaidas.cmv       = parseBRL(document.getElementById('compCmv').value);
+  state.composicaoSaidas.cf        = parseBRL(document.getElementById('compCf').value);
+  state.composicaoSaidas.cmo       = parseBRL(document.getElementById('compCmo').value);
+  state.composicaoSaidas.opex      = parseBRL(document.getElementById('compOpex').value);
+  state.composicaoSaidas.royalties = parseBRL(document.getElementById('compRoyalties').value);
+  state.transferencias.total = parseBRL(document.getElementById('transfTotal').value);
+  state.limites.total   = parseBRL(document.getElementById('limiteTotal').value);
+  state.limites.emUso   = parseBRL(document.getElementById('limiteEmUso').value);
+  state.limites.excedente = parseBRL(document.getElementById('limiteExcedente').value);
+  state.limites.disponivel = parseBRL(document.getElementById('limiteDisponivel').value);
+
+  state.aportesGamel.saldoInicial    = parseBRL(document.getElementById('aporteSaldoInicial').value);
+  state.aportesGamel.recebidos       = parseBRL(document.getElementById('aporteRecebidos').value);
+  state.aportesGamel.enviados        = parseBRL(document.getElementById('aporteEnviados').value);
+  state.aportesGamel.outrasReceitas  = parseBRL(document.getElementById('aporteOutrasReceitas').value);
+
+  state.projecaoSemana.saldoInicial      = parseBRL(document.getElementById('projSaldoInicial').value);
+  state.projecaoSemana.receitaPrevista   = parseBRL(document.getElementById('projReceitaPrevista').value);
+  state.projecaoSemana.despesaPrevista   = parseBRL(document.getElementById('projDespesaPrevista').value);
+  state.projecaoSemana.despesasUrgentes  = parseBRL(document.getElementById('projDespesasUrgentes').value);
+
+  state.fechamentoReal.sicredi.saldoInicial  = parseBRL(document.getElementById('realSicrediSI').value);
+  state.fechamentoReal.sicredi.entradas      = parseBRL(document.getElementById('realSicrediEN').value);
+  state.fechamentoReal.sicredi.saidas        = parseBRL(document.getElementById('realSicrediSA').value);
+  state.fechamentoReal.bradesco.saldoInicial = parseBRL(document.getElementById('realBradescoSI').value);
+  state.fechamentoReal.bradesco.entradas     = parseBRL(document.getElementById('realBradescoEN').value);
+  state.fechamentoReal.bradesco.saidas       = parseBRL(document.getElementById('realBradescoSA').value);
+  state.fechamentoReal.inter.saldoInicial    = parseBRL(document.getElementById('realInterSI').value);
+  state.fechamentoReal.inter.entradas        = parseBRL(document.getElementById('realInterEN').value);
+  state.fechamentoReal.inter.saidas          = parseBRL(document.getElementById('realInterSA').value);
+
+  state.lojas = Array.from(document.querySelectorAll('#lojasBody tr')).map(tr=>({
+    unidade: tr.querySelector('.f-unidade').value,
+    banco: tr.querySelector('.f-banco').value,
+    saldoInicial: parseBRL(tr.querySelector('.f-si').value),
+    entradas: parseBRL(tr.querySelector('.f-en').value),
+    saidas: parseBRL(tr.querySelector('.f-sa').value)
+  }));
+
+  state.transferencias.lista = Array.from(document.querySelectorAll('#transfBody tr')).map(tr=>({
+    origem: tr.querySelector('.f-origem').value,
+    destino: tr.querySelector('.f-destino').value,
+    valor: parseBRL(tr.querySelector('.f-valor').value),
+    descricao: tr.querySelector('.f-desc').value
+  }));
+
+  state.aportesGamel.lista = Array.from(document.querySelectorAll('#aportesBody tr')).map(tr=>({
+    data: tr.querySelector('.a-data').value,
+    origem: tr.querySelector('.a-origem').value,
+    destino: tr.querySelector('.a-destino').value,
+    unidade: tr.querySelector('.a-unidade').value,
+    banco: tr.querySelector('.a-banco').value,
+    valor: parseBRL(tr.querySelector('.a-valor').value),
+    tipo: tr.querySelector('.a-tipo').value,
+    categoria: tr.querySelector('.a-categoria').value,
+    descricao: tr.querySelector('.a-desc').value,
+    perspectiva: tr.dataset.perspectiva || undefined
+  }));
+}
+
+function render(){
+  document.getElementById('saldoInicial').value = brlInput(state.resumo.saldoInicial);
+  document.getElementById('entradas').value     = brlInput(state.resumo.entradas);
+  document.getElementById('saidas').value       = brlInput(state.resumo.saidas);
+  document.getElementById('despesasUrgentes').value = brlInput(state.despesasUrgentes);
+  document.getElementById('compCmv').value       = brlInput(state.composicaoSaidas.cmv);
+  document.getElementById('compCf').value        = brlInput(state.composicaoSaidas.cf);
+  document.getElementById('compCmo').value       = brlInput(state.composicaoSaidas.cmo);
+  document.getElementById('compOpex').value      = brlInput(state.composicaoSaidas.opex);
+  document.getElementById('compRoyalties').value = brlInput(state.composicaoSaidas.royalties);
+  document.getElementById('transfTotal').value  = brlInput(state.transferencias.total);
+  document.getElementById('limiteTotal').value  = brlInput(state.limites.total);
+  document.getElementById('limiteEmUso').value  = brlInput(state.limites.emUso);
+  document.getElementById('limiteExcedente').value = brlInput(state.limites.excedente);
+  document.getElementById('limiteDisponivel').value = brlInput(state.limites.disponivel);
+
+  document.getElementById('aporteSaldoInicial').value   = brlInput(state.aportesGamel.saldoInicial);
+  document.getElementById('aporteRecebidos').value      = brlInput(state.aportesGamel.recebidos);
+  document.getElementById('aporteEnviados').value       = brlInput(state.aportesGamel.enviados);
+  document.getElementById('aporteOutrasReceitas').value = brlInput(state.aportesGamel.outrasReceitas);
+
+  document.getElementById('projSaldoInicial').value     = brlInput(state.projecaoSemana.saldoInicial);
+  document.getElementById('projReceitaPrevista').value  = brlInput(state.projecaoSemana.receitaPrevista);
+  document.getElementById('projDespesaPrevista').value  = brlInput(state.projecaoSemana.despesaPrevista);
+  document.getElementById('projDespesasUrgentes').value = brlInput(state.projecaoSemana.despesasUrgentes);
+
+  document.getElementById('realSicrediSI').value  = brlInput(state.fechamentoReal.sicredi.saldoInicial);
+  document.getElementById('realSicrediEN').value  = brlInput(state.fechamentoReal.sicredi.entradas);
+  document.getElementById('realSicrediSA').value  = brlInput(state.fechamentoReal.sicredi.saidas);
+  document.getElementById('realBradescoSI').value = brlInput(state.fechamentoReal.bradesco.saldoInicial);
+  document.getElementById('realBradescoEN').value = brlInput(state.fechamentoReal.bradesco.entradas);
+  document.getElementById('realBradescoSA').value = brlInput(state.fechamentoReal.bradesco.saidas);
+  document.getElementById('realInterSI').value    = brlInput(state.fechamentoReal.inter.saldoInicial);
+  document.getElementById('realInterEN').value    = brlInput(state.fechamentoReal.inter.entradas);
+  document.getElementById('realInterSA').value    = brlInput(state.fechamentoReal.inter.saidas);
+
+  renderLojas();
+  renderTransf();
+  renderAportes();
+  populateFilterOptions();
+  recalc();
+}
+
+function renderLojas(){
+  const tbody = document.getElementById('lojasBody');
+  tbody.innerHTML = '';
+  state.lojas.forEach((l, idx)=>{
+    if(filterUnidade && l.unidade !== filterUnidade) return;
+    if(filterBanco && l.banco !== filterBanco) return;
+    const tr = document.createElement('tr');
+    tr.dataset.idx = idx;
+    tr.innerHTML = `
+      <td><input class="f-unidade" value="${escapeHtml(l.unidade||'')}" placeholder="Loja"></td>
+      <td><input class="f-banco" value="${escapeHtml(l.banco||'')}" placeholder="Banco"></td>
+      <td><input class="f-si money-cell" value="${brlInput(l.saldoInicial)}"></td>
+      <td><input class="f-en money-cell" value="${brlInput(l.entradas)}"></td>
+      <td><input class="f-sa money-cell" value="${brlInput(l.saidas)}"></td>
+      <td class="f-final">${formatBRL(l.saldoInicial + l.entradas - l.saidas)}</td>
+      <td class="row-actions"><button onclick="removeLojaRow(${idx})" title="Remover">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  attachRecalcListeners();
+}
+
+function renderTransf(){
+  const tbody = document.getElementById('transfBody');
+  tbody.innerHTML = '';
+  state.transferencias.lista.forEach((t, idx)=>{
+    const tr = document.createElement('tr');
+    tr.dataset.idx = idx;
+    tr.innerHTML = `
+      <td><input class="f-origem" value="${escapeHtml(t.origem||'')}" placeholder="Origem"></td>
+      <td><input class="f-destino" value="${escapeHtml(t.destino||'')}" placeholder="Destino"></td>
+      <td><input class="f-valor money-cell" value="${brlInput(t.valor)}"></td>
+      <td><input class="f-desc" value="${escapeHtml(t.descricao||'')}" placeholder="Descrição"></td>
+      <td class="row-actions"><button onclick="removeTransfRow(${idx})" title="Remover">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  attachRecalcListeners();
+}
+
+function renderAportes(){
+  const tbody = document.getElementById('aportesBody');
+  tbody.innerHTML = '';
+  state.aportesGamel.lista.forEach((a, idx)=>{
+    const tr = document.createElement('tr');
+    tr.dataset.idx = idx;
+    tr.dataset.perspectiva = a.perspectiva || '';
+    tr.innerHTML = `
+      <td><input class="a-data" value="${escapeHtml(a.data||'')}" style="min-width:80px;"></td>
+      <td><input class="a-origem" value="${escapeHtml(a.origem||'')}"></td>
+      <td><input class="a-destino" value="${escapeHtml(a.destino||'')}"></td>
+      <td><input class="a-unidade" value="${escapeHtml(a.unidade||'')}"></td>
+      <td><input class="a-banco" value="${escapeHtml(a.banco||'')}"></td>
+      <td><input class="a-valor money-cell" value="${brlInput(a.valor)}"></td>
+      <td>
+        <select class="a-tipo">
+          <option value="Aporte recebido"${a.tipo==='Aporte recebido' ? ' selected' : ''}>Aporte recebido</option>
+          <option value="Aporte enviado"${a.tipo==='Aporte enviado' ? ' selected' : ''}>Aporte enviado</option>
+        </select>
+      </td>
+      <td><input class="a-categoria" value="${escapeHtml(a.categoria||'Aporte — Transf. entre contas (GAMEL)')}" style="min-width:220px;"></td>
+      <td><input class="a-desc" value="${escapeHtml(a.descricao||'')}" style="min-width:220px;"></td>
+      <td class="row-actions"><button onclick="removeAporteRow(${idx})" title="Remover">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  attachRecalcListeners();
+  applyAportesFiltro();
+}
+
+// ---------- Filtro do detalhamento de aportes (recebidos / enviados / todos) ----------
+// Clicar em "Aportes recebidos" ou "Aportes enviados" no card abre o detalhamento já filtrado
+// para aquele tipo. As linhas não exibidas continuam no DOM (só ficam escondidas via CSS), então
+// nada se perde de readInputsToState() quando o filtro está ativo.
+let aportesFiltroAtivo = 'todos';
+function filtrarAportes(tipo){
+  aportesFiltroAtivo = tipo;
+  const detail = document.getElementById('detailAportes');
+  const btn = document.getElementById('btnAportes');
+  detail.classList.add('open');
+  btn.classList.add('open');
+  applyAportesFiltro();
+  // Espera o navegador aplicar o "display:block" (duplo requestAnimationFrame garante que o
+  // layout já foi recalculado) antes de rolar, senão o scrollIntoView pode medir a posição
+  // errada e o detalhamento não aparece direto na tela.
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      detail.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+}
+function abrirTodosAportes(){
+  aportesFiltroAtivo = 'todos';
+  toggleDetail('detailAportes','btnAportes');
+  applyAportesFiltro();
+}
+// Só reseta o filtro para "todos" sem abrir/fechar o painel (usado pelo link "Ver todos").
+function verTodosAportes(){
+  aportesFiltroAtivo = 'todos';
+  applyAportesFiltro();
+}
+function applyAportesFiltro(){
+  const rows = document.querySelectorAll('#aportesBody tr');
+  rows.forEach(tr=>{
+    const tipoSel = tr.querySelector('.a-tipo');
+    const tipo = tipoSel ? tipoSel.value : '';
+    const mostrar = (aportesFiltroAtivo === 'todos') || (tipo === aportesFiltroAtivo);
+    tr.style.display = mostrar ? '' : 'none';
+  });
+  const label = document.getElementById('aportesFiltroLabel');
+  if(label){
+    if(aportesFiltroAtivo === 'todos'){
+      label.style.display = 'none';
+    } else {
+      const nomeFiltro = aportesFiltroAtivo === 'Aporte recebido' ? 'aportes recebidos' : 'aportes enviados';
+      label.innerHTML = `Mostrando apenas os lançamentos de <strong>${nomeFiltro}</strong>. <a href="#" onclick="event.preventDefault(); verTodosAportes();" style="color:var(--blue);">Ver todos</a>`;
+      label.style.display = 'block';
+    }
+  }
+}
+
+// Ranking por loja (unidade): quem mais empresta (origem de "Aporte recebido" pela GAMEL)
+// e quem mais recebe (destino de "Aporte enviado" pela GAMEL). Agrupa por unidade e ordena
+// do maior para o menor valor; mostra as 5 primeiras de cada lado, com barra proporcional.
+function renderAportesRanking(lista){
+  const emprestamBody = document.getElementById('rankingEmprestam');
+  const recebemBody = document.getElementById('rankingRecebem');
+  if(!emprestamBody || !recebemBody) return;
+
+  // O detalhamento tem as duas pontas de cada operação (uma na conta de origem, outra na de
+  // destino — 50 lançamentos para 25 operações). Para o ranking não contar cada operação em
+  // dobro, soma só a ponta "gamel" (uma linha por operação, já com o valor certo por loja).
+  function agruparPorUnidade(tipo){
+    const map = {};
+    lista.forEach(a=>{
+      if(a.tipo !== tipo) return;
+      if(a.perspectiva && a.perspectiva !== 'gamel') return;
+      const chave = (a.unidade || '(sem unidade)').trim() || '(sem unidade)';
+      map[chave] = (map[chave] || 0) + Math.abs(a.valor);
+    });
+    return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  }
+
+  function pintarRanking(tbody, ranking, cor){
+    tbody.innerHTML = '';
+    if(ranking.length === 0){
+      tbody.innerHTML = '<tr><td class="ranking-empty" colspan="2">Sem lançamentos no detalhamento.</td></tr>';
+      return;
+    }
+    const top = ranking.slice(0, 5);
+    const max = top[0][1] || 1;
+    top.forEach(([unidade, valor], idx)=>{
+      const pct = Math.max(4, Math.min(100, (valor/max)*100));
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="rk-pos">${idx+1}º</td>
+        <td>
+          <div class="rk-nome">${escapeHtml(unidade)}</div>
+          <div class="rk-bar-wrap"><div class="rk-bar-track"><div class="rk-bar-fill" style="width:${pct}%; background:${cor};"></div></div></div>
+        </td>
+        <td class="rk-valor">${formatBRL(valor)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+    if(ranking.length > 5){
+      const extraTr = document.createElement('tr');
+      extraTr.innerHTML = `<td></td><td class="ranking-empty">+ ${ranking.length - 5} outra(s) loja(s)</td><td></td>`;
+      tbody.appendChild(extraTr);
+    }
+  }
+
+  pintarRanking(emprestamBody, agruparPorUnidade('Aporte recebido'), 'var(--green)');
+  pintarRanking(recebemBody, agruparPorUnidade('Aporte enviado'), 'var(--red)');
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function populateFilterOptions(){
+  const unidadeSel = document.getElementById('filterUnidade');
+  const bancoSel = document.getElementById('filterBanco');
+  const unidades = [...new Set(state.lojas.map(l=>l.unidade).filter(Boolean))];
+  const bancos = [...new Set(state.lojas.map(l=>l.banco).filter(Boolean))];
+  const curU = unidadeSel.value, curB = bancoSel.value;
+  unidadeSel.innerHTML = '<option value="">Todas as unidades</option>' + unidades.map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join('');
+  bancoSel.innerHTML = '<option value="">Todos os bancos</option>' + bancos.map(b=>`<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
+  unidadeSel.value = curU; bancoSel.value = curB;
+}
+
+function attachRecalcListeners(){
+  document.querySelectorAll('#lojasBody input, #transfBody input, #aportesBody input, #aportesBody select').forEach(inp=>{
+    inp.oninput = ()=>{ readInputsToState(); recalc(); persistDebounced(); };
+    inp.onblur = ()=>{ readInputsToState(); renderLojas(); renderTransf(); renderAportes(); recalc(); populateFilterOptions(); persist(); };
+    inp.onchange = inp.onchange || (()=>{ readInputsToState(); recalc(); persist(); });
+  });
+}
+
+// ---------- Salvamento automático "enquanto digita" ----------
+// Salva no localStorage ~700ms depois da última tecla digitada, mesmo sem sair do campo (blur).
+// O blur/onchange continuam salvando na hora, então o dado nunca fica sem ser gravado.
+let persistDebounceTimer = null;
+function persistDebounced(){
+  const bar = document.getElementById('saveBar');
+  if(bar) bar.textContent = 'Digitando… salvando em instantes';
+  clearTimeout(persistDebounceTimer);
+  persistDebounceTimer = setTimeout(()=>{ persist(); }, 700);
+}
+
+// ---------- Cálculos ----------
+function recalc(){
+  readInputsToState();
+
+  const si = state.resumo.saldoInicial;
+  const en = state.resumo.entradas;
+  const sa = state.resumo.saidas;
+  const despUrg = state.despesasUrgentes;
+  const saldoFinal = si + en - sa - despUrg;
+
+  document.getElementById('saldoFinalDisplay').textContent = formatBRL(saldoFinal);
+  document.getElementById('finalCardValue').textContent = formatBRL(saldoFinal);
+
+  const pct = en !== 0 ? (sa/en*100) : 0;
+  document.getElementById('pctSaidas').textContent = pct.toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% das entradas';
+
+  const pctDespUrg = en !== 0 ? (despUrg/en*100) : 0;
+  document.getElementById('pctDespUrg').textContent = pctDespUrg.toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% das entradas';
+
+  // Composição das saídas (CMV, CF, CMO, OPEX, Royalties)
+  const compCmv = state.composicaoSaidas.cmv;
+  const compCf = state.composicaoSaidas.cf;
+  const compCmo = state.composicaoSaidas.cmo;
+  const compOpex = state.composicaoSaidas.opex;
+  const compRoyalties = state.composicaoSaidas.royalties;
+  const totComp = compCmv + compCf + compCmo + compOpex + compRoyalties;
+  const pctOf = v => sa !== 0 ? (v/sa*100) : 0;
+  document.getElementById('pctCompCmv').textContent = pctOf(compCmv).toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% das saídas';
+  document.getElementById('pctCompCf').textContent = pctOf(compCf).toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% das saídas';
+  document.getElementById('pctCompCmo').textContent = pctOf(compCmo).toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% das saídas';
+  document.getElementById('pctCompOpex').textContent = pctOf(compOpex).toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% das saídas';
+  document.getElementById('pctCompRoyalties').textContent = pctOf(compRoyalties).toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% das saídas';
+  document.getElementById('totCompSaidas').textContent = formatBRL(totComp);
+
+  const finalCard = document.getElementById('finalCard');
+  const finalMsg = document.getElementById('finalCardMsg');
+  const statusPill = document.getElementById('statusPill');
+  if(saldoFinal >= 0){
+    finalCard.classList.remove('negative'); finalCard.classList.add('positive');
+    finalMsg.textContent = 'Fechamento positivo — saldo bancário encerrou o dia no verde.';
+    statusPill.textContent = '✅ Fechamento positivo';
+  } else {
+    finalCard.classList.remove('positive'); finalCard.classList.add('negative');
+    finalMsg.textContent = 'Fechamento negativo — saldo bancário encerrou o dia no vermelho.';
+    statusPill.textContent = '⚠️ Fechamento negativo';
+  }
+
+  // Limites
+  const limTotal = state.limites.total;
+  const limUso = state.limites.emUso;
+  const limExcedente = state.limites.excedente;
+  const limDisp = state.limites.disponivel;
+  const usoPct = limTotal !== 0 ? Math.min(100, Math.max(0, limUso/limTotal*100)) : 0;
+  document.getElementById('limiteBar').style.width = usoPct + '%';
+  document.getElementById('limitePct').textContent = usoPct.toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% em uso';
+  document.getElementById('limiteRestantePct').textContent = (100-usoPct).toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% disponível';
+
+  // Disponibilidade total
+  const dispTotal = saldoFinal + limDisp;
+  document.getElementById('disponibilidadeTotal').textContent = formatBRL(dispTotal);
+  document.getElementById('dispSaldo').textContent = formatBRL(saldoFinal);
+  document.getElementById('dispLimite').textContent = formatBRL(limDisp);
+
+  // Aportes — GAMEL
+  const apSI = state.aportesGamel.saldoInicial;
+  const apRec = state.aportesGamel.recebidos;
+  const apEnv = state.aportesGamel.enviados;
+  const apOut = state.aportesGamel.outrasReceitas;
+  const apResultado = apRec - apEnv;
+  const apFinal = apSI + apRec + apOut - apEnv;
+  document.getElementById('aporteResultado').textContent = formatBRL(apResultado);
+  document.getElementById('aporteSaldoFinal').textContent = formatBRL(apFinal);
+  const signal = document.getElementById('aporteSignal');
+  const resultRow = document.getElementById('aporteResultadoRow');
+  signal.classList.remove('green','yellow','red');
+  resultRow.classList.remove('positive','negative','zero');
+  if(apResultado > 0){ signal.classList.add('green'); resultRow.classList.add('positive'); }
+  else if(apResultado < 0){ signal.classList.add('red'); resultRow.classList.add('negative'); }
+  else { signal.classList.add('yellow'); resultRow.classList.add('zero'); }
+
+  // Projeção da semana
+  const projSI = state.projecaoSemana.saldoInicial;
+  const projRec = state.projecaoSemana.receitaPrevista;
+  const projDesp = state.projecaoSemana.despesaPrevista;
+  const projUrg = state.projecaoSemana.despesasUrgentes;
+  const saldoProjetado = projSI + projRec - projDesp - projUrg;
+  document.getElementById('projSaldoProjetado').textContent = formatBRL(saldoProjetado);
+  const projBanner = document.getElementById('projecaoBanner');
+  projBanner.classList.remove('positive','negative');
+  projBanner.classList.add(saldoProjetado >= 0 ? 'positive' : 'negative');
+
+  // Fechamento real por banco (bate 1:1 com o extrato — inclui aportes e transferências)
+  const rSI = state.fechamentoReal.sicredi.saldoInicial;
+  const rSEn = state.fechamentoReal.sicredi.entradas;
+  const rSSa = state.fechamentoReal.sicredi.saidas;
+  const rSFinal = rSI + rSEn - rSSa;
+  document.getElementById('realSicrediFinal').textContent = formatBRL(rSFinal);
+
+  const rBI = state.fechamentoReal.bradesco.saldoInicial;
+  const rBEn = state.fechamentoReal.bradesco.entradas;
+  const rBSa = state.fechamentoReal.bradesco.saidas;
+  const rBFinal = rBI + rBEn - rBSa;
+  document.getElementById('realBradescoFinal').textContent = formatBRL(rBFinal);
+
+  const rII = state.fechamentoReal.inter.saldoInicial;
+  const rIEn = state.fechamentoReal.inter.entradas;
+  const rISa = state.fechamentoReal.inter.saidas;
+  const rIFinal = rII + rIEn - rISa;
+  document.getElementById('realInterFinal').textContent = formatBRL(rIFinal);
+
+  document.getElementById('realTotalFinal').textContent = formatBRL(rSFinal + rBFinal + rIFinal);
+
+  // Ponte explicativa: saldo final real do Sicredi = saldo final operacional + aportes e transferências líquidos
+  document.getElementById('realSicrediBridge').textContent =
+    `= saldo final operacional (${formatBRL(saldoFinal)}) + aportes e transferências líquidos que só passam pelo Sicredi (${formatBRL(rSFinal - saldoFinal)})`;
+
+  // Totais das lojas (sempre com base em TODAS as lojas, não só as filtradas)
+  const totSI = state.lojas.reduce((a,l)=>a+l.saldoInicial,0);
+  const totEN = state.lojas.reduce((a,l)=>a+l.entradas,0);
+  const totSA = state.lojas.reduce((a,l)=>a+l.saidas,0);
+  const totFinal = totSI + totEN - totSA;
+  document.getElementById('totLojaSaldoInicial').textContent = formatBRL(totSI);
+  document.getElementById('totLojaEntradas').textContent = formatBRL(totEN);
+  document.getElementById('totLojaSaidas').textContent = formatBRL(totSA);
+  document.getElementById('totLojaSaldoFinal').textContent = formatBRL(totFinal);
+
+  // Total das transferências detalhadas
+  const totTransfLista = state.transferencias.lista.reduce((a,t)=>a+t.valor,0);
+  document.getElementById('totTransf').textContent = formatBRL(totTransfLista);
+
+  // Totais dos aportes detalhados
+  const totApRec = state.aportesGamel.lista.filter(a=>a.tipo==='Aporte recebido').reduce((a,r)=>a+Math.abs(r.valor),0);
+  const totApEnv = state.aportesGamel.lista.filter(a=>a.tipo==='Aporte enviado').reduce((a,r)=>a+Math.abs(r.valor),0);
+  document.getElementById('totAportes').textContent = formatBRL(totApRec) + ' / ' + formatBRL(totApEnv);
+
+  // Movimentação total entre contas no dia, olhando separadamente o que entrou e o que saiu:
+  // Entrou = transferências (total movimentado) + aportes recebidos pela GAMEL
+  // Saiu   = transferências (total movimentado) + aportes enviados pela GAMEL
+  // Como é dinheiro que só circula entre contas do próprio grupo, o esperado é que os dois batam.
+  const movEntrada = state.transferencias.total + apRec;
+  const movSaida = state.transferencias.total + apEnv;
+  const movEntradaEl = document.getElementById('movEntradaValor');
+  const movSaidaEl = document.getElementById('movSaidaValor');
+  const movMsgEl = document.getElementById('movComparacaoMsg');
+  if(movEntradaEl) movEntradaEl.textContent = formatBRL(movEntrada);
+  if(movSaidaEl) movSaidaEl.textContent = formatBRL(movSaida);
+  if(movMsgEl){
+    if(Math.abs(movEntrada - movSaida) <= 0.01){
+      movMsgEl.innerHTML = `✅ Bate: entrou e saiu o mesmo valor (${formatBRL(movEntrada)}).`;
+      movMsgEl.style.color = 'var(--green)';
+    } else {
+      movMsgEl.innerHTML = `⚠️ Não bate: diferença de ${formatBRL(movEntrada-movSaida)} entre o que entrou e o que saiu.`;
+      movMsgEl.style.color = 'var(--red)';
+    }
+  }
+
+  // Ranking por loja: quem mais empresta (origem dos aportes recebidos pela GAMEL)
+  // e quem mais recebe (destino dos aportes enviados pela GAMEL)
+  renderAportesRanking(state.aportesGamel.lista);
+
+  // Recalcula saldo final por linha da tabela de lojas visível
+  document.querySelectorAll('#lojasBody tr').forEach(tr=>{
+    const s = parseBRL(tr.querySelector('.f-si').value);
+    const e = parseBRL(tr.querySelector('.f-en').value);
+    const sd = parseBRL(tr.querySelector('.f-sa').value);
+    tr.querySelector('.f-final').textContent = formatBRL(s+e-sd);
+  });
+
+  // ---------- Validação de divergências ----------
+  const alerts = [];
+  const TOL = 0.01;
+  if(state.lojas.length > 0){
+    if(Math.abs(totSI - si) > TOL) alerts.push(`Saldo inicial: soma das lojas (${formatBRL(totSI)}) difere do resumo (${formatBRL(si)}) — diferença de ${formatBRL(totSI-si)}.`);
+    if(Math.abs(totEN - en) > TOL) alerts.push(`Entradas: soma das lojas (${formatBRL(totEN)}) difere do resumo (${formatBRL(en)}) — diferença de ${formatBRL(totEN-en)}.`);
+    if(Math.abs(totSA - sa) > TOL) alerts.push(`Saídas: soma das lojas (${formatBRL(totSA)}) difere do resumo (${formatBRL(sa)}) — diferença de ${formatBRL(totSA-sa)}.`);
+  }
+  if(state.transferencias.lista.length > 0 && Math.abs(totTransfLista - state.transferencias.total) > TOL){
+    alerts.push(`Transferências: soma do detalhamento (${formatBRL(totTransfLista)}) difere do total informado (${formatBRL(state.transferencias.total)}) — diferença de ${formatBRL(totTransfLista-state.transferencias.total)}.`);
+  }
+  // O detalhamento agora traz as duas pontas de cada uma das 25 operações de aporte do dia
+  // (a ponta que saiu da conta de origem e a ponta que entrou na conta de destino — 50 lançamentos
+  // no extrato), então a soma de cada tipo já bate direto com o card, sem precisar combinar nada.
+  if(state.aportesGamel.lista.length > 0){
+    if(Math.abs(totApRec - apRec) > TOL) alerts.push(`Aportes GAMEL recebidos: soma do detalhamento (${formatBRL(totApRec)}) difere do card (${formatBRL(apRec)}) — diferença de ${formatBRL(totApRec-apRec)}.`);
+    if(Math.abs(totApEnv - apEnv) > TOL) alerts.push(`Aportes GAMEL enviados: soma do detalhamento (${formatBRL(totApEnv)}) difere do card (${formatBRL(apEnv)}) — diferença de ${formatBRL(totApEnv-apEnv)}.`);
+  }
+  if(totComp > 0 && Math.abs(totComp - sa) > TOL){
+    alerts.push(`Composição das saídas: soma de CMV+CF+CMO+OPEX+Royalties (${formatBRL(totComp)}) difere das saídas operacionais (${formatBRL(sa)}) — diferença de ${formatBRL(totComp-sa)}.`);
+  }
+  const alertBox = document.getElementById('alertBox');
+  if(alerts.length){
+    alertBox.innerHTML = '<strong>⚠️ Divergência encontrada nos valores informados:</strong>' + alerts.map(a=>`<div>• ${a}</div>`).join('');
+    alertBox.classList.add('show');
+  } else {
+    alertBox.classList.remove('show');
+  }
+
+  return { si, en, sa, despUrg, saldoFinal, compCmv, compCf, compCmo, compOpex, compRoyalties, totComp, limTotal, limUso, limExcedente, limDisp, dispTotal, pct, apSI, apRec, apEnv, apOut, apResultado, apFinal, rSI, rSEn, rSSa, rSFinal, rBI, rBEn, rBSa, rBFinal, rII, rIEn, rISa, rIFinal };
+}
+
+// ---------- Linhas dinâmicas ----------
+function addLojaRow(){
+  readInputsToState();
+  state.lojas.push({unidade:'', banco:'', saldoInicial:0, entradas:0, saidas:0});
+  renderLojas(); populateFilterOptions(); recalc(); persist();
+}
+function removeLojaRow(idx){
+  readInputsToState();
+  state.lojas.splice(idx,1);
+  renderLojas(); populateFilterOptions(); recalc(); persist();
+}
+function addTransfRow(){
+  readInputsToState();
+  state.transferencias.lista.push({origem:'', destino:'', valor:0, descricao:''});
+  renderTransf(); recalc(); persist();
+}
+function removeTransfRow(idx){
+  readInputsToState();
+  state.transferencias.lista.splice(idx,1);
+  renderTransf(); recalc(); persist();
+}
+function addAporteRow(){
+  readInputsToState();
+  state.aportesGamel.lista.push({data:currentDate.split('-').reverse().join('/'), origem:'GAMEL', destino:'', unidade:'', banco:'Sicredi', valor:0, tipo:'Aporte recebido', categoria:'Aporte — Transf. entre contas (GAMEL)', descricao:''});
+  renderAportes(); recalc(); persist();
+}
+function removeAporteRow(idx){
+  readInputsToState();
+  state.aportesGamel.lista.splice(idx,1);
+  renderAportes(); recalc(); persist();
+}
+
+// ---------- Detalhes expansíveis ----------
+function toggleDetail(detailId, btnId){
+  document.getElementById(detailId).classList.toggle('open');
+  document.getElementById(btnId).classList.toggle('open');
+}
+
+// ---------- Persistência ----------
+function persist(){
+  readInputsToState();
+  setDataset(currentDate, state);
+  const bar = document.getElementById('saveBar');
+  bar.textContent = 'Salvo automaticamente às ' + new Date().toLocaleTimeString('pt-BR');
+}
+function salvarDados(){
+  persist();
+  showToast('Dados salvos com sucesso!');
+}
+
+// ---------- Troca de data ----------
+function loadDate(date){
+  currentDate = date;
+  filterUnidade = ''; filterBanco = '';
+  state = getDataset(date);
+  render();
+}
+function importFromDate(){
+  const src = document.getElementById('importDate').value;
+  if(!src){ showToast('Selecione uma data para importar.'); return; }
+  const all = loadAll();
+  const hasSeed = (src === '2026-08-20' || src === '2026-09-14');
+  if(!all[src] && !hasSeed){ showToast('Não há dados salvos para ' + formatDateBR(src) + '.'); return; }
+  const imported = all[src] ? migrateDataset(all[src], seedFor(src)) : getDataset(src);
+  state = JSON.parse(JSON.stringify(imported));
+  render();
+  persist();
+  showToast('Dados de ' + formatDateBR(src) + ' importados para ' + formatDateBR(currentDate) + '.');
+}
+// Descarta qualquer edição salva neste navegador para a data atual e recarrega os valores
+// originais do painel (o "seed" mais atual de 20/08 ou 14/09, ou um modelo zerado para outras
+// datas). Útil quando os valores oficiais do painel são corrigidos, mas o navegador ainda guarda
+// uma versão antiga salva localmente por cima do valor novo.
+function restaurarDadosOriginais(){
+  const all = loadAll();
+  delete all[currentDate];
+  saveAll(all);
+  state = JSON.parse(JSON.stringify(seedFor(currentDate)));
+  render();
+  persist();
+  showToast('Dados originais de ' + formatDateBR(currentDate) + ' restaurados.');
+}
+function formatDateBR(iso){
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ---------- Importar planilha (Excel/CSV) ----------
+// Formato esperado: duas colunas, "Campo" e "Valor" (a primeira linha pode ser o cabeçalho).
+// Use "Baixar modelo de planilha" para gerar um arquivo já no formato certo, com os valores atuais.
+function normalizeLabel(s){
+  return String(s)
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .toLowerCase()
+    .replace(/[():]/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+const PLANILHA_FIELD_MAP = [
+  { keys:['saldo inicial sicredi','saldo inicial'], path:['resumo','saldoInicial'] },
+  { keys:['entradas operacionais','entradas'], path:['resumo','entradas'] },
+  { keys:['saidas operacionais','saidas'], path:['resumo','saidas'] },
+  { keys:['despesas urgentes','despesas urgentes hoje'], path:['despesasUrgentes'] },
+  { keys:['cmv'], path:['composicaoSaidas','cmv'] },
+  { keys:['cf'], path:['composicaoSaidas','cf'] },
+  { keys:['cmo'], path:['composicaoSaidas','cmo'] },
+  { keys:['opex'], path:['composicaoSaidas','opex'] },
+  { keys:['royalties'], path:['composicaoSaidas','royalties'] },
+  { keys:['total transferencias','transferencias entre contas','total movimentado'], path:['transferencias','total'] },
+  { keys:['limite total'], path:['limites','total'] },
+  { keys:['limite em uso'], path:['limites','emUso'] },
+  { keys:['limite excedente'], path:['limites','excedente'] },
+  { keys:['limite disponivel'], path:['limites','disponivel'] },
+  { keys:['aporte gamel - saldo inicial','gamel saldo inicial'], path:['aportesGamel','saldoInicial'] },
+  { keys:['aporte gamel - recebidos','aportes recebidos'], path:['aportesGamel','recebidos'] },
+  { keys:['aporte gamel - enviados','aportes enviados'], path:['aportesGamel','enviados'] },
+  { keys:['aporte gamel - outras receitas','outras receitas gamel'], path:['aportesGamel','outrasReceitas'] },
+  { keys:['sicredi - saldo inicial'], path:['fechamentoReal','sicredi','saldoInicial'] },
+  { keys:['sicredi - entradas reais'], path:['fechamentoReal','sicredi','entradas'] },
+  { keys:['sicredi - saidas reais'], path:['fechamentoReal','sicredi','saidas'] },
+  { keys:['bradesco - saldo inicial'], path:['fechamentoReal','bradesco','saldoInicial'] },
+  { keys:['bradesco - entradas reais'], path:['fechamentoReal','bradesco','entradas'] },
+  { keys:['bradesco - saidas reais'], path:['fechamentoReal','bradesco','saidas'] },
+  { keys:['inter - saldo inicial'], path:['fechamentoReal','inter','saldoInicial'] },
+  { keys:['inter - entradas reais'], path:['fechamentoReal','inter','entradas'] },
+  { keys:['inter - saidas reais'], path:['fechamentoReal','inter','saidas'] }
+];
+function setByPath(obj, path, value){
+  let o = obj;
+  for(let i=0;i<path.length-1;i++) o = o[path[i]];
+  o[path[path.length-1]] = value;
+}
+function parsePlanilhaValue(v){
+  if(typeof v === 'number') return v;
+  return parseBRL(v);
+}
+
+document.getElementById('planilhaInput').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const statusEl = document.getElementById('planilhaStatus');
+  if(typeof XLSX === 'undefined'){
+    statusEl.textContent = 'Não consegui carregar o leitor de planilhas agora (provavelmente sem internet). Você ainda pode digitar os valores direto nos campos abaixo — tudo é editável e salva sozinho.';
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try{
+      const data = new Uint8Array(evt.target.result);
+      const wb = XLSX.read(data, {type:'array', cellDates:true});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+
+      const parsed = [];
+      let dateFound = null;
+      rows.forEach(row=>{
+        if(!row || row.length < 2) return;
+        const rawLabel = row[0], rawValue = row[1];
+        if(rawLabel === '' || rawLabel == null || rawValue === '' || rawValue == null) return;
+        const norm = normalizeLabel(rawLabel);
+        if(norm === 'campo') return; // linha de cabeçalho
+        if(norm === 'data'){
+          if(rawValue instanceof Date){
+            dateFound = rawValue.toISOString().slice(0,10);
+          } else if(typeof rawValue === 'string' && /\d{1,2}\/\d{1,2}\/\d{4}/.test(rawValue)){
+            const [d,m,y] = rawValue.split('/');
+            dateFound = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+          }
+          return;
+        }
+        parsed.push({ norm, rawLabel, rawValue });
+      });
+
+      if(dateFound && dateFound !== currentDate){
+        persist();
+        document.getElementById('dateInput').value = dateFound;
+        loadDate(dateFound);
+      }
+
+      let matched = 0;
+      const unmatched = [];
+      parsed.forEach(({norm, rawLabel, rawValue})=>{
+        const entry = PLANILHA_FIELD_MAP.find(f=>f.keys.includes(norm));
+        if(entry){
+          setByPath(state, entry.path, parsePlanilhaValue(rawValue));
+          matched++;
+        } else {
+          unmatched.push(String(rawLabel));
+        }
+      });
+
+      render();
+      persist();
+
+      let msg = `Planilha importada para ${formatDateBR(currentDate)}: ${matched} campo(s) reconhecido(s).`;
+      if(unmatched.length) msg += ` Não reconheci: ${unmatched.slice(0,4).join(', ')}${unmatched.length>4 ? '…' : ''} — confira o modelo.`;
+      statusEl.textContent = msg;
+      showToast('Planilha importada com sucesso!');
+    }catch(err){
+      statusEl.textContent = 'Não consegui ler essa planilha. Confira se ela segue o modelo (botão "Baixar modelo de planilha" ao lado) — ou digite os valores direto nos campos, que também salva sozinho.';
+    }
+    e.target.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function baixarModeloPlanilha(){
+  const rows = [
+    ['Campo','Valor'],
+    ['Data', formatDateBR(currentDate)],
+    ['Saldo inicial (Sicredi)', state.resumo.saldoInicial],
+    ['Entradas operacionais', state.resumo.entradas],
+    ['Saídas operacionais', state.resumo.saidas],
+    ['Despesas urgentes', state.despesasUrgentes],
+    ['CMV', state.composicaoSaidas.cmv],
+    ['CF', state.composicaoSaidas.cf],
+    ['CMO', state.composicaoSaidas.cmo],
+    ['OPEX', state.composicaoSaidas.opex],
+    ['Royalties', state.composicaoSaidas.royalties],
+    ['Total transferências', state.transferencias.total],
+    ['Limite total', state.limites.total],
+    ['Limite em uso', state.limites.emUso],
+    ['Limite excedente', state.limites.excedente],
+    ['Limite disponível', state.limites.disponivel],
+    ['Aporte GAMEL - saldo inicial', state.aportesGamel.saldoInicial],
+    ['Aporte GAMEL - recebidos', state.aportesGamel.recebidos],
+    ['Aporte GAMEL - enviados', state.aportesGamel.enviados],
+    ['Aporte GAMEL - outras receitas', state.aportesGamel.outrasReceitas],
+    ['Sicredi - saldo inicial', state.fechamentoReal.sicredi.saldoInicial],
+    ['Sicredi - entradas reais', state.fechamentoReal.sicredi.entradas],
+    ['Sicredi - saídas reais', state.fechamentoReal.sicredi.saidas],
+    ['Bradesco - saldo inicial', state.fechamentoReal.bradesco.saldoInicial],
+    ['Bradesco - entradas reais', state.fechamentoReal.bradesco.entradas],
+    ['Bradesco - saídas reais', state.fechamentoReal.bradesco.saidas],
+    ['Inter - saldo inicial', state.fechamentoReal.inter.saldoInicial],
+    ['Inter - entradas reais', state.fechamentoReal.inter.entradas],
+    ['Inter - saídas reais', state.fechamentoReal.inter.saidas]
+  ];
+  if(typeof XLSX !== 'undefined'){
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{wch:32},{wch:18}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Fechamento');
+    XLSX.writeFile(wb, `modelo-fechamento-${currentDate}.xlsx`);
+  } else {
+    const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `modelo-fechamento-${currentDate}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+}
+
+// ---------- Exportar PDF ----------
+function exportarPDF(){
+  window.print();
+}
+
+// ---------- Copiar para WhatsApp ----------
+function copiarWhatsApp(){
+  const c = recalc();
+  const dataFmt = formatDateBR(currentDate);
+  const statusTxt = c.saldoFinal >= 0
+    ? '✅ Fechamento positivo — saldo bancário encerrou o dia no verde.'
+    : '🔴 Fechamento negativo — saldo bancário encerrou o dia no vermelho.';
+
+  const msg =
+`📊 FECHAMENTO DIÁRIO — GRUPO LONDRINO | ${dataFmt}
+💰 MOVIMENTAÇÃO DO DIA
+• Saldo inicial: ${formatBRL(c.si)}
+• 📥 Entradas: ${formatBRL(c.en)} — líquido de transferências internas
+• 📤 Saídas: ${formatBRL(c.sa)} — equivalente a ${c.pct.toLocaleString('pt-BR',{maximumFractionDigits:1})}% das entradas
+• 🚨 Despesas urgentes: ${formatBRL(c.despUrg)}
+• ✅ Saldo final: ${formatBRL(c.saldoFinal)}
+${statusTxt}
+📦 COMPOSIÇÃO DAS SAÍDAS
+• CMV: ${formatBRL(c.compCmv)}
+• CF: ${formatBRL(c.compCf)}
+• CMO: ${formatBRL(c.compCmo)}
+• OPEX: ${formatBRL(c.compOpex)}
+• Royalties: ${formatBRL(c.compRoyalties)}
+↔️ TRANSFERÊNCIAS ENTRE CONTAS
+• Total movimentado: ${formatBRL(state.transferencias.total)}
+• Movimentação interna do grupo, portanto não considerada como receita ou despesa.
+🏦 LIMITES BANCÁRIOS
+• Limite total: ${formatBRL(c.limTotal)}
+• 🟠 Em uso: ${formatBRL(c.limUso)}
+• 🔴 Excedente: ${formatBRL(c.limExcedente)}
+• 🟢 Disponível: ${formatBRL(c.limDisp)}
+💳 Disponibilidade total (saldo + limite): ${formatBRL(c.dispTotal)}
+🏢 APORTES — GAMEL
+• Saldo inicial: ${formatBRL(c.apSI)}
+• Aportes recebidos: ${formatBRL(c.apRec)}
+• Aportes enviados: ${formatBRL(c.apEnv)}
+• Resultado líquido: ${formatBRL(c.apResultado)}
+• Outras receitas: ${formatBRL(c.apOut)}
+• Saldo final: ${formatBRL(c.apFinal)}
+• Somente os lançamentos categorizados como aporte foram retirados do resultado operacional.`;
+
+  copyToClipboard(msg);
+}
+
+function copyToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>showToast('Resumo copiado! Cole no WhatsApp.'))
+      .catch(()=>fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try{ document.execCommand('copy'); showToast('Resumo copiado! Cole no WhatsApp.'); }
+  catch(e){ showToast('Não foi possível copiar automaticamente.'); }
+  document.body.removeChild(ta);
+}
+
+// ---------- Toast ----------
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ---------- Máscara de moeda nos campos principais ----------
+function attachMoneyMask(id){
+  const el = document.getElementById(id);
+  el.addEventListener('blur', ()=>{
+    const n = parseBRL(el.value);
+    el.value = brlInput(n);
+    readInputsToState();
+    recalc();
+    persist();
+  });
+  el.addEventListener('input', ()=>{ readInputsToState(); recalc(); persistDebounced(); });
+}
+
+// ---------- Filtros ----------
+document.getElementById('filterUnidade').addEventListener('change', e=>{ filterUnidade = e.target.value; renderLojas(); });
+document.getElementById('filterBanco').addEventListener('change', e=>{ filterBanco = e.target.value; renderLojas(); });
+
+document.getElementById('dateInput').addEventListener('change', e=>{
+  persist(); // salva o dia anterior antes de trocar
+  loadDate(e.target.value);
+});
+
+// ---------- Inicialização ----------
+window.addEventListener('DOMContentLoaded', ()=>{
+  ['saldoInicial','entradas','saidas','despesasUrgentes','compCmv','compCf','compCmo','compOpex','compRoyalties',
+   'transfTotal','limiteTotal','limiteEmUso','limiteExcedente','limiteDisponivel',
+   'aporteSaldoInicial','aporteRecebidos','aporteEnviados','aporteOutrasReceitas',
+   'projSaldoInicial','projReceitaPrevista','projDespesaPrevista','projDespesasUrgentes',
+   'realSicrediSI','realSicrediEN','realSicrediSA','realBradescoSI','realBradescoEN','realBradescoSA',
+   'realInterSI','realInterEN','realInterSA'].forEach(attachMoneyMask);
+  const dateInput = document.getElementById('dateInput');
+  loadDate(dateInput.value);
+});
+</script>
+
+</body>
+</html>
