@@ -533,6 +533,19 @@
       <button class="toggle-btn" style="margin-top:0;" onclick="baixarModeloPlanilha()">⬇️ Baixar modelo de planilha</button>
     </div>
   </div>
+  <div class="filters" style="margin-bottom:8px; align-items:flex-end;">
+    <div class="field" style="flex:1 1 420px;">
+      <label>Publicar este dia — todo mundo que abrir o link passa a ver</label>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <input id="publicarAutor" placeholder="Seu nome" style="flex:1 1 150px; min-width:120px;">
+        <input id="publicarSenha" type="password" placeholder="Senha de publicação" style="flex:1 1 170px; min-width:140px;">
+        <button class="add-row-btn" style="height:36px;" id="publicarBtn" onclick="publicarDia()">📤 Publicar este dia</button>
+        <button class="toggle-btn" style="margin-top:0; display:none;" id="descartarRascunhoBtn" onclick="descartarRascunho()">↺ Descartar alterações não publicadas</button>
+      </div>
+    </div>
+  </div>
+  <div class="note" id="publicarStatus" style="margin:0 0 14px 4px;">Carregando o que está publicado…</div>
+
   <div class="note" id="planilhaStatus" style="margin:0 0 20px 4px;">
     Suba o extrato do dia: o painel vai para a data do próprio extrato e preenche entradas, saídas, saldo inicial, composição das saídas, fechamento real por banco e a tabela por loja. O resto (despesas urgentes, limites, transferências, aportes e projeção) você digita na mão — e nada disso é apagado na importação. Sem planilha? Não tem problema — todos os campos abaixo são editáveis. É só digitar por cima dos valores; o painel recalcula e salva sozinho, automaticamente, a cada alteração.
   </div>
@@ -983,7 +996,10 @@ function migrateDataset(data, seed){
 function getDataset(date){
   const all = loadAll();
   const seed = seedFor(date);
+  // 1º rascunho local (trabalho em andamento), 2º o que está publicado para todos, 3º o seed.
   if(all[date]) return migrateDataset(all[date], seed);
+  const pub = datasetPublicado(date);
+  if(pub) return migrateDataset(pub, seed);
   return seed;
 }
 function setDataset(date, data){
@@ -1583,6 +1599,7 @@ function persist(){
   setDataset(currentDate, state);
   const bar = document.getElementById('saveBar');
   bar.textContent = 'Salvo automaticamente às ' + new Date().toLocaleTimeString('pt-BR');
+  atualizarStatusPublicacao();
 }
 function salvarDados(){
   persist();
@@ -1595,6 +1612,7 @@ function loadDate(date){
   filterUnidade = ''; filterBanco = '';
   state = getDataset(date);
   render();
+  atualizarStatusPublicacao();
 }
 function importFromDate(){
   const src = document.getElementById('importDate').value;
@@ -2114,6 +2132,146 @@ function attachMoneyMask(id){
   el.addEventListener('input', ()=>{ readInputsToState(); recalc(); persistDebounced(); });
 }
 
+// ---------- Publicação (o que todo mundo enxerga ao abrir o link) ----------
+// O painel passa a ter duas camadas:
+//   PUBLICADO  — vem de /api/dados (arquivo dados.json no repositório). É o que
+//                qualquer pessoa vê ao abrir o link, em qualquer computador.
+//   RASCUNHO   — o que está no localStorage deste navegador e ainda não foi
+//                publicado. Só quem está nesta máquina enxerga.
+// Ao abrir um dia, o rascunho tem preferência (é o trabalho em andamento de quem
+// está ali). Publicou, o rascunho é apagado e o dia passa a vir do publicado.
+// Sem internet ou com a API fora do ar, tudo continua funcionando como antes,
+// só que local.
+const CHAVE_AUTOR = 'londrinoAutor';
+const CHAVE_SENHA = 'londrinoSenhaPublicacao';
+let publicados = {};
+let publicadosCarregados = false;
+let publicacaoErro = '';
+
+async function carregarPublicados(){
+  try{
+    const r = await fetch('api/dados', { cache: 'no-store' });
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok){ publicacaoErro = (j && j.erro) ? j.erro : `o servidor respondeu ${r.status}`; return false; }
+    if(j && j.ok && j.dados && typeof j.dados === 'object'){
+      publicados = j.dados;
+      publicadosCarregados = true;
+      return true;
+    }
+  }catch(e){ publicacaoErro = 'não consegui alcançar o servidor (' + (e.message || e) + ')'; }
+  if(!publicacaoErro) publicacaoErro = 'resposta inesperada do servidor';
+  return false;
+}
+function datasetPublicado(date){
+  const d = publicados ? publicados[date] : null;
+  return (d && typeof d === 'object' && !Array.isArray(d)) ? d : null;
+}
+function metaPublicado(date){
+  return (publicados && publicados._meta && publicados._meta[date]) || null;
+}
+// Um rascunho só conta como "alteração não publicada" se for realmente diferente
+// do que está publicado — o salvamento automático grava no localStorage mesmo
+// quando ninguém mudou nada, e isso não pode virar aviso falso.
+function temAlteracaoNaoPublicada(date){
+  const local = loadAll()[date];
+  if(!local) return false;
+  const pub = datasetPublicado(date);
+  if(!pub) return true;
+  const seed = seedFor(date);
+  try{
+    return JSON.stringify(migrateDataset(local, seed)) !== JSON.stringify(migrateDataset(pub, seed));
+  }catch(e){ return true; }
+}
+function descartarRascunho(){
+  if(!datasetPublicado(currentDate)){
+    showToast('Este dia ainda não foi publicado — não há versão publicada para voltar.');
+    return;
+  }
+  if(!confirm('Descartar as alterações deste dia que ainda não foram publicadas e voltar para a versão publicada?')) return;
+  const all = loadAll();
+  delete all[currentDate];
+  saveAll(all);
+  loadDate(currentDate);
+  showToast('Rascunho descartado — mostrando a versão publicada.');
+}
+
+function atualizarStatusPublicacao(){
+  const el = document.getElementById('publicarStatus');
+  if(!el) return;
+  const meta = metaPublicado(currentDate);
+  const pendente = temAlteracaoNaoPublicada(currentDate);
+  let txt;
+  if(!publicadosCarregados){
+    txt = `⚠️ A publicação não está disponível: ${publicacaoErro}. O painel segue funcionando e salvando neste computador, mas ninguém mais vê estes dados enquanto isso.`;
+  } else if(meta){
+    const quando = new Date(meta.publicadoEm);
+    const quandoTxt = isNaN(quando.getTime()) ? '' : ` em ${quando.toLocaleDateString('pt-BR')} às ${quando.toLocaleTimeString('pt-BR').slice(0,5)}`;
+    txt = `✅ ${formatDateBR(currentDate)} está publicado${meta.autor ? ` por ${meta.autor}` : ''}${quandoTxt} — quem abrir o link vê estes dados.`;
+    if(pendente) txt += ' ⚠️ Mas há alterações feitas depois disso que ainda não foram publicadas.';
+  } else if(datasetPublicado(currentDate)){
+    txt = `✅ ${formatDateBR(currentDate)} está publicado — quem abrir o link vê estes dados.`;
+    if(pendente) txt += ' ⚠️ Há alterações ainda não publicadas.';
+  } else {
+    txt = `⚠️ ${formatDateBR(currentDate)} ainda não foi publicado — por enquanto estes números só existem neste computador. Clique em Publicar para todo mundo ver.`;
+  }
+  el.textContent = txt;
+  const btnDescartar = document.getElementById('descartarRascunhoBtn');
+  if(btnDescartar) btnDescartar.style.display = (pendente && datasetPublicado(currentDate)) ? '' : 'none';
+}
+
+async function publicarDia(){
+  const btn = document.getElementById('publicarBtn');
+  const el  = document.getElementById('publicarStatus');
+  const autor = document.getElementById('publicarAutor').value.trim();
+  const senha = document.getElementById('publicarSenha').value;
+  if(!senha){ el.textContent = '⚠️ Digite a senha de publicação para publicar este dia.'; document.getElementById('publicarSenha').focus(); return; }
+
+  persist(); // garante que o que está na tela virou dado antes de subir
+  btn.disabled = true;
+  const rotulo = btn.textContent;
+  btn.textContent = 'Publicando…';
+  el.textContent = `Publicando o fechamento de ${formatDateBR(currentDate)}…`;
+
+  try{
+    const r = await fetch('api/dados', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senha: senha, autor: autor, data: currentDate, dataset: state })
+    });
+    const j = await r.json().catch(()=>({}));
+
+    if(r.status === 401){
+      localStorage.removeItem(CHAVE_SENHA);
+      el.textContent = '❌ Senha de publicação incorreta. Confira com quem administra o painel.';
+      return;
+    }
+    if(!r.ok || !j.ok){
+      el.textContent = '❌ Não consegui publicar: ' + (j.erro || `erro ${r.status}`) + ' — seus dados continuam salvos neste computador.';
+      return;
+    }
+
+    // Deu certo: o dia passa a vir do publicado e o rascunho local sai de cena.
+    publicados[currentDate] = JSON.parse(JSON.stringify(state));
+    if(!publicados._meta) publicados._meta = {};
+    publicados._meta[currentDate] = j.meta || { publicadoEm: new Date().toISOString(), autor: autor };
+    publicadosCarregados = true;
+    const all = loadAll();
+    delete all[currentDate];
+    saveAll(all);
+
+    if(autor) localStorage.setItem(CHAVE_AUTOR, autor);
+    localStorage.setItem(CHAVE_SENHA, senha);
+
+    atualizarStatusPublicacao();
+    showToast('Publicado! Agora todo mundo que abrir o link vê este dia.');
+  }catch(e){
+    el.textContent = '❌ Não consegui falar com o servidor de publicação (' + (e.message || e) + '). Seus dados continuam salvos neste computador.';
+  }finally{
+    btn.disabled = false;
+    btn.textContent = rotulo;
+  }
+}
+
 // ---------- Filtros ----------
 document.getElementById('filterUnidade').addEventListener('change', e=>{ filterUnidade = e.target.value; renderLojas(); });
 document.getElementById('filterBanco').addEventListener('change', e=>{ filterBanco = e.target.value; renderLojas(); });
@@ -2132,7 +2290,12 @@ window.addEventListener('DOMContentLoaded', ()=>{
    'realSicrediSI','realSicrediEN','realSicrediSA','realBradescoSI','realBradescoEN','realBradescoSA',
    'realInterSI','realInterEN','realInterSA'].forEach(attachMoneyMask);
   const dateInput = document.getElementById('dateInput');
+  document.getElementById('publicarAutor').value = localStorage.getItem(CHAVE_AUTOR) || '';
+  document.getElementById('publicarSenha').value = localStorage.getItem(CHAVE_SENHA) || '';
   loadDate(dateInput.value);
+  // Busca o que está publicado e redesenha — assim a tela aparece na hora e o
+  // dado compartilhado entra assim que chega, sem travar o carregamento.
+  carregarPublicados().then(()=>{ loadDate(dateInput.value); });
 });
 </script>
 
