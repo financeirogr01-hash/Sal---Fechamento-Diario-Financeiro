@@ -1,0 +1,254 @@
+{
+  "2026-09-15": {
+    "resumo": {
+      "saldoInicial": 77160.96,
+      "entradas": 111491.04,
+      "saidas": 164329.78
+    },
+    "despesasUrgentes": 0,
+    "composicaoSaidas": {
+      "cmv": 134982.27,
+      "cf": 0,
+      "cmo": 13911.75,
+      "opex": 1306,
+      "royalties": 14070.36
+    },
+    "lojas": [
+      {
+        "unidade": "—",
+        "banco": "Sicredi",
+        "saldoInicial": 417.35,
+        "entradas": 150,
+        "saidas": 79
+      },
+      {
+        "unidade": "BIG FOME",
+        "banco": "Inter Empresas",
+        "saldoInicial": -7268.48,
+        "entradas": 2715.82,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 01",
+        "banco": "Sicredi",
+        "saldoInicial": 5633.87,
+        "entradas": 8946.1,
+        "saidas": 12653.63
+      },
+      {
+        "unidade": "BIGGS 02",
+        "banco": "Bradesco Empresas",
+        "saldoInicial": -6762.64,
+        "entradas": 0,
+        "saidas": 168.5
+      },
+      {
+        "unidade": "BIGGS 02",
+        "banco": "Sicredi",
+        "saldoInicial": 5293.51,
+        "entradas": 9474.75,
+        "saidas": 8792.94
+      },
+      {
+        "unidade": "BIGGS 03",
+        "banco": "Sicredi",
+        "saldoInicial": 1701.61,
+        "entradas": 4316.46,
+        "saidas": 7379.74
+      },
+      {
+        "unidade": "BIGGS 04",
+        "banco": "Bradesco Empresas",
+        "saldoInicial": -6939.49,
+        "entradas": 83.96,
+        "saidas": 168.5
+      },
+      {
+        "unidade": "BIGGS 04",
+        "banco": "Sicredi",
+        "saldoInicial": 6899.97,
+        "entradas": 10357.72,
+        "saidas": 4559.29
+      },
+      {
+        "unidade": "BIGGS 05",
+        "banco": "Bradesco Empresas",
+        "saldoInicial": -6583.43,
+        "entradas": 0,
+        "saidas": 168.5
+      },
+      {
+        "unidade": "BIGGS 05",
+        "banco": "Sicredi",
+        "saldoInicial": 6414.4,
+        "entradas": 25443.37,
+        "saidas": 10210.39
+      },
+      {
+        "unidade": "BIGGS 06",
+        "banco": "Bradesco Empresas",
+        "saldoInicial": -8640,
+        "entradas": 75.38,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 06",
+        "banco": "Sicredi",
+        "saldoInicial": 2573.51,
+        "entradas": 3591.6,
+        "saidas": 6249.18
+      },
+      {
+        "unidade": "BIGGS 07 E AÇAI",
+        "banco": "Sicredi",
+        "saldoInicial": 5798.36,
+        "entradas": 6669.74,
+        "saidas": 22691.93
+      },
+      {
+        "unidade": "BIGGS 08 E 09",
+        "banco": "Sicredi",
+        "saldoInicial": 8374.88,
+        "entradas": 3638.05,
+        "saidas": 13338.32
+      },
+      {
+        "unidade": "BIGGS 10",
+        "banco": "Sicredi",
+        "saldoInicial": 7265.82,
+        "entradas": 4292.21,
+        "saidas": 4898.25
+      },
+      {
+        "unidade": "BIGGS 11",
+        "banco": "Sicredi",
+        "saldoInicial": 1552.31,
+        "entradas": 4639.65,
+        "saidas": 7179.88
+      },
+      {
+        "unidade": "BIGGS 12",
+        "banco": "Sicredi",
+        "saldoInicial": 3732.04,
+        "entradas": 4239.94,
+        "saidas": 10015.28
+      },
+      {
+        "unidade": "BIGGS 13",
+        "banco": "Sicredi",
+        "saldoInicial": 6560.77,
+        "entradas": 6095.83,
+        "saidas": 4344.38
+      },
+      {
+        "unidade": "CORN FOOD",
+        "banco": "Inter Empresas",
+        "saldoInicial": -3386.67,
+        "entradas": 62.55,
+        "saidas": 0
+      },
+      {
+        "unidade": "DELLIRIS 01 (IS01)",
+        "banco": "Inter Empresas",
+        "saldoInicial": 0,
+        "entradas": 52.2,
+        "saidas": 0
+      },
+      {
+        "unidade": "ISAIAS 01",
+        "banco": "Sicredi",
+        "saldoInicial": 8635.82,
+        "entradas": 7501.3,
+        "saidas": 7514.32
+      },
+      {
+        "unidade": "ISAIAS 02",
+        "banco": "Sicredi",
+        "saldoInicial": 2552.97,
+        "entradas": 1522.71,
+        "saidas": 29724.91
+      },
+      {
+        "unidade": "ISAIAS 03",
+        "banco": "Sicredi",
+        "saldoInicial": 1023.36,
+        "entradas": 1953.24,
+        "saidas": 4947.77
+      },
+      {
+        "unidade": "MAPOLI",
+        "banco": "Bradesco Empresas",
+        "saldoInicial": -15000,
+        "entradas": 850.42,
+        "saidas": 168.5
+      },
+      {
+        "unidade": "MAPOLI",
+        "banco": "Sicredi",
+        "saldoInicial": 482.32,
+        "entradas": 2711.81,
+        "saidas": 5396
+      },
+      {
+        "unidade": "ROBS",
+        "banco": "Sicredi",
+        "saldoInicial": 2248.09,
+        "entradas": 890.23,
+        "saidas": 3680.57
+      },
+      {
+        "unidade": "SERBASE",
+        "banco": "Inter Empresas",
+        "saldoInicial": -4275.06,
+        "entradas": 1216,
+        "saidas": 0
+      }
+    ],
+    "transferencias": {
+      "total": 0,
+      "lista": []
+    },
+    "limites": {
+      "total": 244600,
+      "emUso": 0,
+      "excedente": 0,
+      "disponivel": 0
+    },
+    "aportesGamel": {
+      "saldoInicial": 0,
+      "recebidos": 0,
+      "enviados": 0,
+      "outrasReceitas": 0,
+      "lista": []
+    },
+    "projecaoSemana": {
+      "saldoInicial": 0,
+      "receitaPrevista": 0,
+      "despesaPrevista": 0,
+      "despesasUrgentes": 0
+    },
+    "fechamentoReal": {
+      "sicredi": {
+        "saldoInicial": 77160.96,
+        "entradas": 106434.71,
+        "saidas": 163655.78
+      },
+      "bradesco": {
+        "saldoInicial": -43925.56,
+        "entradas": 1009.76,
+        "saidas": 674
+      },
+      "inter": {
+        "saldoInicial": -14930.21,
+        "entradas": 4046.57,
+        "saidas": 0
+      }
+    }
+  },
+  "_meta": {
+    "2026-09-15": {
+      "publicadoEm": "2026-09-16T20:50:45.143Z",
+      "autor": "Larissa"
+    }
+  }
+}
