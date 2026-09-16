@@ -543,7 +543,7 @@
       <div class="card">
         <div class="label">Saldo inicial</div>
         <input class="value money" id="saldoInicial" value="28114.78">
-        <div class="hint">consolidado de todas as contas</div>
+        <div class="hint">somente contas Sicredi</div>
       </div>
       <div class="card tone-green">
         <div class="label">Entradas</div>
@@ -1453,6 +1453,10 @@ function recalc(){
 
   // Totais das lojas (sempre com base em TODAS as lojas, não só as filtradas)
   const totSI = state.lojas.reduce((a,l)=>a+l.saldoInicial,0);
+  // Regra permanente 1: o card "Saldo inicial" só conta Sicredi, então a conferência contra a
+  // tabela por loja também tem que olhar apenas as linhas Sicredi — senão acusa divergência
+  // justamente quando os dois lados estão certos.
+  const totSISicredi = state.lojas.reduce((a,l)=>a + (/sicredi/i.test(l.banco||'') ? l.saldoInicial : 0),0);
   const totEN = state.lojas.reduce((a,l)=>a+l.entradas,0);
   const totSA = state.lojas.reduce((a,l)=>a+l.saidas,0);
   const totFinal = totSI + totEN - totSA;
@@ -1507,7 +1511,7 @@ function recalc(){
   const alerts = [];
   const TOL = 0.01;
   if(state.lojas.length > 0){
-    if(Math.abs(totSI - si) > TOL) alerts.push(`Saldo inicial: soma das lojas (${formatBRL(totSI)}) difere do resumo (${formatBRL(si)}) — diferença de ${formatBRL(totSI-si)}.`);
+    if(Math.abs(totSISicredi - si) > TOL) alerts.push(`Saldo inicial: soma das contas Sicredi na tabela por loja (${formatBRL(totSISicredi)}) difere do resumo (${formatBRL(si)}) — diferença de ${formatBRL(totSISicredi-si)}.`);
     if(Math.abs(totEN - en) > TOL) alerts.push(`Entradas: soma das lojas (${formatBRL(totEN)}) difere do resumo (${formatBRL(en)}) — diferença de ${formatBRL(totEN-en)}.`);
     if(Math.abs(totSA - sa) > TOL) alerts.push(`Saídas: soma das lojas (${formatBRL(totSA)}) difere do resumo (${formatBRL(sa)}) — diferença de ${formatBRL(totSA-sa)}.`);
   }
@@ -1757,7 +1761,7 @@ function importarExtrato(rows, cols, statusEl){
   const datas = {};
   const planosIgnorados = new Set();
   const bancosIgnorados = new Set();
-  let entradas = 0, saidas = 0, lancamentos = 0, saldosAnteriores = 0, saldoInicialTotal = 0;
+  let entradas = 0, saidas = 0, lancamentos = 0, saldosAnteriores = 0, foraDoResultado = 0;
 
   const cel = (row, idx)=> (idx == null ? '' : (row[idx] == null ? '' : row[idx]));
   const contaDe = (loja, banco)=>{
@@ -1786,10 +1790,17 @@ function importarExtrato(rows, cols, statusEl){
     if(ehSaldoAnterior){
       const v = parsePlanilhaValue(cel(row, cols.saldo));
       conta.saldoInicial += v;
-      saldoInicialTotal += v;
       if(bancoKey){ bancos[bancoKey].saldoInicial += v; bancosVistos[bancoKey] = true; }
       else if(bancoNome) bancosIgnorados.add(bancoNome);
       saldosAnteriores++;
+      continue;
+    }
+
+    // Regra permanente 3: saídas de mora/encargos do Bradesco (uso de cheque especial) ficam
+    // fora do resultado operacional — não entram em nenhum card do painel.
+    const catNorm = normalizeLabel(cel(row, cols.categoria));
+    if(bancoKey === 'bradesco' && (catNorm === 'outros encargos' || /mora.*encargo/.test(normalizeLabel(desc)))){
+      foraDoResultado += Math.abs(parsePlanilhaValue(valorCru));
       continue;
     }
 
@@ -1847,10 +1858,9 @@ function importarExtrato(rows, cols, statusEl){
 
   state.resumo.entradas = entradas;
   state.resumo.saidas   = saidas;
-  // O card "Saldo inicial" do resumo é o consolidado de todos os bancos — é assim que o painel
-  // confere o resumo contra a soma da tabela por loja. Cada banco tem o seu próprio valor no
-  // bloco "Fechamento real", logo abaixo.
-  if(saldosAnteriores) state.resumo.saldoInicial = saldoInicialTotal;
+  // Regra permanente 1: o saldo inicial do resumo considera SOMENTE as contas Sicredi.
+  // Bradesco e Inter ficam de fora (os saldos deles seguem visíveis no bloco "Fechamento real").
+  if(bancosVistos.sicredi) state.resumo.saldoInicial = bancos.sicredi.saldoInicial;
 
   Object.keys(compVistos).forEach(k => { state.composicaoSaidas[k] = comp[k]; });
   Object.keys(bancosVistos).forEach(k => {
@@ -1868,7 +1878,7 @@ function importarExtrato(rows, cols, statusEl){
 
   const nomeBanco = { sicredi:'Sicredi', bradesco:'Bradesco', inter:'Inter' };
   const preenchidos = ['entradas', 'saídas'];
-  if(saldosAnteriores) preenchidos.push('saldo inicial');
+  if(bancosVistos.sicredi) preenchidos.push('saldo inicial (Sicredi)');
   if(Object.keys(compVistos).length) preenchidos.push('composição das saídas (' + Object.keys(compVistos).map(k=>k.toUpperCase()).join(', ') + ')');
   const listaBancos = Object.keys(bancosVistos).map(k=>nomeBanco[k]);
   if(listaBancos.length) preenchidos.push('fechamento real (' + listaBancos.join(', ') + ')');
@@ -1877,6 +1887,7 @@ function importarExtrato(rows, cols, statusEl){
   let msg = `Extrato de ${formatDateBR(currentDate)} importado: ${lancamentos} lançamento(s) e ${saldosAnteriores} saldo(s) anterior(es). `
           + `Preenchi ${preenchidos.join('; ')}. `
           + `O que o extrato não traz (despesas urgentes, limites, transferências, aportes e projeção) ficou como estava — é só digitar por cima, que salva sozinho.`;
+  if(foraDoResultado) msg += ` Deixei ${formatBRL(foraDoResultado)} de mora/encargos do Bradesco fora do resultado, conforme a regra permanente 3.`;
   if(multiplasDatas) msg += ` Atenção: o arquivo tem lançamentos de mais de uma data; usei ${formatDateBR(currentDate)}, a mais frequente.`;
   if(planosIgnorados.size) msg += ` Planos de conta que não sei classificar: ${[...planosIgnorados].slice(0,4).join(', ')}${planosIgnorados.size>4?'…':''} — entraram nas saídas totais, mas não na composição.`;
   if(bancosIgnorados.size) msg += ` Bancos fora de Sicredi/Bradesco/Inter: ${[...bancosIgnorados].slice(0,4).join(', ')}${bancosIgnorados.size>4?'…':''} — contam no total e na tabela por loja, mas não têm bloco próprio no fechamento real.`;
