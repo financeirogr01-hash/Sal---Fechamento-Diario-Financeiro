@@ -526,7 +526,7 @@
 
   <div class="filters" style="margin-bottom:8px; align-items:center;">
     <div class="field">
-      <label>Importar planilha (Excel ou CSV)</label>
+      <label>Importar planilha — extrato do dia ou modelo Campo/Valor (Excel ou CSV)</label>
       <input type="file" id="planilhaInput" accept=".xlsx,.xls,.csv">
     </div>
     <div class="field" style="justify-content:flex-end; flex-direction:row; align-items:flex-end; gap:8px;">
@@ -534,7 +534,7 @@
     </div>
   </div>
   <div class="note" id="planilhaStatus" style="margin:0 0 20px 4px;">
-    Sem planilha? Não tem problema — todos os campos abaixo são editáveis. É só digitar por cima dos valores; o painel recalcula e salva sozinho, automaticamente, a cada alteração.
+    Suba o extrato do dia: o painel vai para a data do próprio extrato e preenche entradas, saídas, saldo inicial, composição das saídas, fechamento real por banco e a tabela por loja. O resto (despesas urgentes, limites, transferências, aportes e projeção) você digita na mão — e nada disso é apagado na importação. Sem planilha? Não tem problema — todos os campos abaixo são editáveis. É só digitar por cima dos valores; o painel recalcula e salva sozinho, automaticamente, a cada alteração.
   </div>
 
   <section>
@@ -543,7 +543,7 @@
       <div class="card">
         <div class="label">Saldo inicial</div>
         <input class="value money" id="saldoInicial" value="28114.78">
-        <div class="hint">somente contas Sicredi</div>
+        <div class="hint">consolidado de todas as contas</div>
       </div>
       <div class="card tone-green">
         <div class="label">Entradas</div>
@@ -1623,7 +1623,10 @@ function formatDateBR(iso){
 }
 
 // ---------- Importar planilha (Excel/CSV) ----------
-// Formato esperado: duas colunas, "Campo" e "Valor" (a primeira linha pode ser o cabeçalho).
+// Dois formatos são aceitos:
+//  1) Extrato bancário (Data, Descrição, Categoria, Plano de contas, Tipo, Valor, Saldo após,
+//     Loja, Banco...) — reconhecido sozinho e agregado pelos lançamentos. Veja importarExtrato().
+//  2) Duas colunas, "Campo" e "Valor" (a primeira linha pode ser o cabeçalho).
 // Use "Baixar modelo de planilha" para gerar um arquivo já no formato certo, com os valores atuais.
 function normalizeLabel(s){
   return String(s)
@@ -1672,6 +1675,215 @@ function parsePlanilhaValue(v){
   return parseBRL(v);
 }
 
+// ---------- Importar EXTRATO bancário (razão de lançamentos) ----------
+// Reconhece a planilha de extrato exportada pelo sistema — colunas Data, Descrição, Categoria,
+// Plano de contas, Tipo, Valor, Saldo após, Loja, Empresa, CNPJ, Banco, Ag./Conta — e preenche
+// sozinho tudo que dá para calcular a partir dos lançamentos, já na data do próprio extrato.
+// O que o extrato não tem (despesas urgentes, limites, transferências entre contas, aportes
+// GAMEL, projeção da semana) NÃO é tocado: continua do jeito que estava, para você digitar
+// na mão. Tudo salva automaticamente, como no resto do painel.
+
+// Para onde vai cada "Plano de contas" do extrato dentro da Composição das saídas.
+// Só os planos que aparecerem no arquivo são sobrescritos — os demais ficam intactos.
+const EXTRATO_PLANO_MAP = {
+  'cmv': 'cmv',
+  'cmo': 'cmo',
+  'royalties': 'royalties',
+  'cf': 'cf',
+  'custos fixos': 'cf',
+  'custo fixo': 'cf',
+  'opex': 'opex',
+  'taxas e tarifas bancarias': 'opex' // troque para 'cf' se preferir tarifa bancária como custo fixo
+};
+
+function extratoBancoKey(nome){
+  const n = normalizeLabel(nome || '');
+  if(n.includes('sicredi'))  return 'sicredi';
+  if(n.includes('bradesco')) return 'bradesco';
+  if(n.includes('inter'))    return 'inter';
+  return null;
+}
+
+function extratoDateToISO(v){
+  if(v instanceof Date && !isNaN(v.getTime())){
+    return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`;
+  }
+  if(typeof v === 'number' && isFinite(v) && v > 0){
+    const d = new Date(Date.UTC(1899,11,30) + Math.floor(v)*86400000);
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+  }
+  const s = String(v == null ? '' : v).trim();
+  let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s);
+  if(m) return `${m[3]}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+  m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+  if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+  return null;
+}
+
+// Procura a linha de cabeçalho do extrato nas primeiras linhas do arquivo.
+// Devolve o índice de cada coluna, ou null quando não é um extrato (aí vale o formato Campo/Valor).
+function detectExtratoHeader(rows){
+  const limite = Math.min(rows.length, 20);
+  for(let i = 0; i < limite; i++){
+    const row = rows[i] || [];
+    const cols = { headerRow: i };
+    row.forEach((cell, idx)=>{
+      const n = normalizeLabel(cell);
+      if(!n) return;
+      if     (n === 'data'                                       && cols.data      == null) cols.data      = idx;
+      else if((n === 'descricao' || n === 'historico')           && cols.descricao == null) cols.descricao = idx;
+      else if(n === 'categoria'                                  && cols.categoria == null) cols.categoria = idx;
+      else if((n === 'plano de contas' || n === 'plano de conta')&& cols.plano     == null) cols.plano     = idx;
+      else if(n === 'tipo'                                       && cols.tipo      == null) cols.tipo      = idx;
+      else if(n === 'valor'                                      && cols.valor     == null) cols.valor     = idx;
+      else if((n === 'saldo apos' || n === 'saldo')              && cols.saldo     == null) cols.saldo     = idx;
+      else if((n === 'loja' || n === 'unidade')                  && cols.loja      == null) cols.loja      = idx;
+      else if(n === 'banco'                                      && cols.banco     == null) cols.banco     = idx;
+    });
+    if(cols.data != null && cols.valor != null && cols.banco != null && (cols.tipo != null || cols.saldo != null)){
+      return cols;
+    }
+  }
+  return null;
+}
+
+function importarExtrato(rows, cols, statusEl){
+  const zero = ()=>({ saldoInicial:0, entradas:0, saidas:0 });
+  const bancos = { sicredi: zero(), bradesco: zero(), inter: zero() };
+  const bancosVistos = {};
+  const contas = new Map();              // "loja||banco" -> linha da tabela por loja
+  const comp = { cmv:0, cf:0, cmo:0, opex:0, royalties:0 };
+  const compVistos = {};
+  const datas = {};
+  const planosIgnorados = new Set();
+  const bancosIgnorados = new Set();
+  let entradas = 0, saidas = 0, lancamentos = 0, saldosAnteriores = 0, saldoInicialTotal = 0;
+
+  const cel = (row, idx)=> (idx == null ? '' : (row[idx] == null ? '' : row[idx]));
+  const contaDe = (loja, banco)=>{
+    const chave = `${loja}||${banco}`;
+    if(!contas.has(chave)) contas.set(chave, { unidade: loja, banco: banco, saldoInicial:0, entradas:0, saidas:0 });
+    return contas.get(chave);
+  };
+
+  for(let i = cols.headerRow + 1; i < rows.length; i++){
+    const row = rows[i];
+    if(!row || !row.length) continue;
+
+    const desc      = String(cel(row, cols.descricao)).trim();
+    const bancoNome = String(cel(row, cols.banco)).trim();
+    const lojaNome  = String(cel(row, cols.loja)).trim();
+    const bancoKey  = extratoBancoKey(bancoNome);
+    const ehSaldoAnterior = normalizeLabel(desc) === 'saldo anterior';
+
+    const valorCru = cel(row, cols.valor);
+    const temValor = valorCru !== '' && valorCru != null;
+    if(!ehSaldoAnterior && !temValor) continue;          // linha vazia / rodapé
+    if(!bancoNome && !lojaNome && !desc) continue;
+
+    const conta = contaDe(lojaNome || '—', bancoNome || '—');
+
+    if(ehSaldoAnterior){
+      const v = parsePlanilhaValue(cel(row, cols.saldo));
+      conta.saldoInicial += v;
+      saldoInicialTotal += v;
+      if(bancoKey){ bancos[bancoKey].saldoInicial += v; bancosVistos[bancoKey] = true; }
+      else if(bancoNome) bancosIgnorados.add(bancoNome);
+      saldosAnteriores++;
+      continue;
+    }
+
+    const valor = parsePlanilhaValue(valorCru);
+    const tipoNorm = normalizeLabel(cel(row, cols.tipo));
+    let ehEntrada;
+    if(tipoNorm.startsWith('entrada') || tipoNorm.startsWith('credito')) ehEntrada = true;
+    else if(tipoNorm.startsWith('saida') || tipoNorm.startsWith('debito')) ehEntrada = false;
+    else ehEntrada = valor >= 0;                          // sem coluna Tipo: usa o sinal do valor
+
+    const v = Math.abs(valor);
+    if(v === 0) continue;
+    lancamentos++;
+
+    if(ehEntrada){
+      entradas += v;
+      conta.entradas += v;
+      if(bancoKey){ bancos[bancoKey].entradas += v; bancosVistos[bancoKey] = true; }
+      else if(bancoNome) bancosIgnorados.add(bancoNome);
+    } else {
+      saidas += v;
+      conta.saidas += v;
+      if(bancoKey){ bancos[bancoKey].saidas += v; bancosVistos[bancoKey] = true; }
+      else if(bancoNome) bancosIgnorados.add(bancoNome);
+
+      const planoNome = String(cel(row, cols.plano)).trim();
+      const destino = EXTRATO_PLANO_MAP[normalizeLabel(planoNome)];
+      if(destino){ comp[destino] += v; compVistos[destino] = true; }
+      else if(planoNome) planosIgnorados.add(planoNome);
+    }
+
+    const iso = extratoDateToISO(cel(row, cols.data));
+    if(iso) datas[iso] = (datas[iso] || 0) + 1;
+  }
+
+  if(!lancamentos && !saldosAnteriores){
+    statusEl.textContent = 'Reconheci o arquivo como extrato, mas não encontrei nenhum lançamento nele. Confira se a planilha tem as colunas Data, Valor, Tipo e Banco preenchidas.';
+    return;
+  }
+
+  // Data do extrato = a data que mais aparece nos lançamentos.
+  const dataISO = Object.keys(datas).sort((a,b)=> datas[b] - datas[a])[0] || null;
+  const multiplasDatas = Object.keys(datas).length > 1;
+  if(dataISO && dataISO !== currentDate){
+    persist();
+    document.getElementById('dateInput').value = dataISO;
+    loadDate(dataISO);
+  }
+
+  // Os filtros da tabela por loja precisam sair antes de redesenhar: readInputsToState() só
+  // enxerga as linhas visíveis, então uma linha filtrada seria perdida ao salvar.
+  filterUnidade = ''; filterBanco = '';
+  document.getElementById('filterUnidade').value = '';
+  document.getElementById('filterBanco').value = '';
+
+  state.resumo.entradas = entradas;
+  state.resumo.saidas   = saidas;
+  // O card "Saldo inicial" do resumo é o consolidado de todos os bancos — é assim que o painel
+  // confere o resumo contra a soma da tabela por loja. Cada banco tem o seu próprio valor no
+  // bloco "Fechamento real", logo abaixo.
+  if(saldosAnteriores) state.resumo.saldoInicial = saldoInicialTotal;
+
+  Object.keys(compVistos).forEach(k => { state.composicaoSaidas[k] = comp[k]; });
+  Object.keys(bancosVistos).forEach(k => {
+    state.fechamentoReal[k].saldoInicial = bancos[k].saldoInicial;
+    state.fechamentoReal[k].entradas     = bancos[k].entradas;
+    state.fechamentoReal[k].saidas       = bancos[k].saidas;
+  });
+
+  state.lojas = Array.from(contas.values())
+    .filter(l => l.saldoInicial || l.entradas || l.saidas)
+    .sort((a,b) => a.unidade.localeCompare(b.unidade,'pt-BR') || a.banco.localeCompare(b.banco,'pt-BR'));
+
+  render();
+  persist();
+
+  const nomeBanco = { sicredi:'Sicredi', bradesco:'Bradesco', inter:'Inter' };
+  const preenchidos = ['entradas', 'saídas'];
+  if(saldosAnteriores) preenchidos.push('saldo inicial');
+  if(Object.keys(compVistos).length) preenchidos.push('composição das saídas (' + Object.keys(compVistos).map(k=>k.toUpperCase()).join(', ') + ')');
+  const listaBancos = Object.keys(bancosVistos).map(k=>nomeBanco[k]);
+  if(listaBancos.length) preenchidos.push('fechamento real (' + listaBancos.join(', ') + ')');
+  preenchidos.push(state.lojas.length + ' linha(s) na tabela por loja');
+
+  let msg = `Extrato de ${formatDateBR(currentDate)} importado: ${lancamentos} lançamento(s) e ${saldosAnteriores} saldo(s) anterior(es). `
+          + `Preenchi ${preenchidos.join('; ')}. `
+          + `O que o extrato não traz (despesas urgentes, limites, transferências, aportes e projeção) ficou como estava — é só digitar por cima, que salva sozinho.`;
+  if(multiplasDatas) msg += ` Atenção: o arquivo tem lançamentos de mais de uma data; usei ${formatDateBR(currentDate)}, a mais frequente.`;
+  if(planosIgnorados.size) msg += ` Planos de conta que não sei classificar: ${[...planosIgnorados].slice(0,4).join(', ')}${planosIgnorados.size>4?'…':''} — entraram nas saídas totais, mas não na composição.`;
+  if(bancosIgnorados.size) msg += ` Bancos fora de Sicredi/Bradesco/Inter: ${[...bancosIgnorados].slice(0,4).join(', ')}${bancosIgnorados.size>4?'…':''} — contam no total e na tabela por loja, mas não têm bloco próprio no fechamento real.`;
+  statusEl.textContent = msg;
+  showToast('Extrato importado com sucesso!');
+}
+
 document.getElementById('planilhaInput').addEventListener('change', function(e){
   const file = e.target.files[0];
   if(!file) return;
@@ -1688,6 +1900,14 @@ document.getElementById('planilhaInput').addEventListener('change', function(e){
       const wb = XLSX.read(data, {type:'array', cellDates:true});
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+
+      // É um extrato bancário? Então agrega os lançamentos em vez de procurar Campo/Valor.
+      const extratoCols = detectExtratoHeader(rows);
+      if(extratoCols){
+        importarExtrato(rows, extratoCols, statusEl);
+        e.target.value = '';
+        return;
+      }
 
       const parsed = [];
       let dateFound = null;
@@ -1735,7 +1955,7 @@ document.getElementById('planilhaInput').addEventListener('change', function(e){
       statusEl.textContent = msg;
       showToast('Planilha importada com sucesso!');
     }catch(err){
-      statusEl.textContent = 'Não consegui ler essa planilha. Confira se ela segue o modelo (botão "Baixar modelo de planilha" ao lado) — ou digite os valores direto nos campos, que também salva sozinho.';
+      statusEl.textContent = 'Não consegui ler essa planilha. Ela precisa ser um extrato bancário (com as colunas Data, Descrição, Tipo, Valor e Banco) ou seguir o modelo Campo/Valor (botão "Baixar modelo de planilha" ao lado) — ou digite os valores direto nos campos, que também salva sozinho.';
     }
     e.target.value = '';
   };
