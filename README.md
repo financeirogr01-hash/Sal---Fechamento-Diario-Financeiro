@@ -68,7 +68,18 @@ dois e nas próximas é só clicar em Publicar.
 ## Regras permanentes de classificação
 
 Estão documentadas no topo do `<script>` em `index.html` e valem para todo extrato importado.
-As regras 1 (saldo inicial só Sicredi) e 3 (mora/encargos do Bradesco fora do resultado) são
-aplicadas automaticamente na importação. As regras 4 (aportes GAMEL) e 5 (transferências
-internas entre lojas) **não** são automáticas: o extrato não tem como distinguir esses
-lançamentos com segurança, então precisam de ajuste manual no painel.
+Todas são aplicadas automaticamente na importação:
+
+- **1** — saldo inicial do resumo considera só as contas Sicredi
+- **2** — entradas do Bradesco entram como receita operacional
+- **3** — mora/encargos do Bradesco ficam fora do resultado
+- **4** — na conta GAMEL, só a categoria que começa com "Aporte" é tratada como aporte; ela sai
+  do resultado operacional e alimenta o bloco de Aportes GAMEL com as duas pontas
+- **5** — saída cujo favorecido é outra empresa do grupo é transferência interna: sai das saídas
+  operacionais e vai para o bloco de Transferências
+
+A lista de empresas do grupo usada pela regra 5 é montada a partir da coluna **Empresa** do
+próprio extrato, e a comparação usa o nome inteiro ("ELMA FOODS"), nunca só o começo — cortar
+em "SICA" faria um Pix de uma cliente chamada Jessica virar transferência interna. Como
+consequência, uma transferência para uma empresa do grupo cuja conta não esteja no arquivo não
+é identificada, e precisa ser lançada à mão.

@@ -1807,12 +1807,46 @@ function detectExtratoHeader(rows){
       else if((n === 'saldo apos' || n === 'saldo')              && cols.saldo     == null) cols.saldo     = idx;
       else if((n === 'loja' || n === 'unidade')                  && cols.loja      == null) cols.loja      = idx;
       else if(n === 'banco'                                      && cols.banco     == null) cols.banco     = idx;
+      else if(n === 'empresa'                                    && cols.empresa   == null) cols.empresa   = idx;
     });
     if(cols.data != null && cols.valor != null && cols.banco != null && (cols.tipo != null || cols.saldo != null)){
       return cols;
     }
   }
   return null;
+}
+
+// Empresas do próprio grupo, tiradas da coluna "Empresa" do extrato — é assim que dá para
+// saber que um Pix enviado foi para outra empresa da casa (regra permanente 5) e não para um
+// fornecedor. Usa o nome inteiro ("ELMA FOODS"), nunca só o começo: cortar em "SICA" faria
+// "JESSICA" virar transferência interna.
+function nomesDoGrupo(rows, cols, cel){
+  const nomes = new Set();
+  for(let i = cols.headerRow + 1; i < rows.length; i++){
+    if(!rows[i]) continue;
+    const bruto = String(cel(rows[i], cols.empresa) || '').trim();
+    if(!bruto) continue;
+    const nome = normalizeLabel(bruto)
+      .replace(/^[0-9]+ /, '')                                   // "01 Del Hub Foods" -> "del hub foods"
+      .replace(/ (ltda|sa|s\/a|me|eireli|epp)( .*)?$/, '')        // tira o tipo societário
+      .trim();
+    if(nome.length > 6) nomes.add(nome);
+  }
+  return [...nomes];
+}
+
+// Nome da outra ponta, para mostrar na lista: o que vem depois do CNPJ/CPF ou do traço.
+function contraparteDaDescricao(desc){
+  const t = String(desc || '').trim();
+  // O nome costuma vir depois do CPF/CNPJ da operação ("... PIX 42874031000111 Amgeza Foods").
+  // Pega o ÚLTIMO bloco de 3+ dígitos e fica com o que vem depois dele.
+  let m = /^.*[0-9]{3,}[ ]+(.+)$/.exec(t);
+  if(m && m[1].trim()) return m[1].trim();
+  // Sem documento no meio, tenta o traço cercado de espaços ("Pix recebido - 01 Del Hub Foods").
+  // O traço precisa dos espaços, senão "TED-TRANSF ELET..." seria cortado no lugar errado.
+  m = /[ ][-—][ ]+(.+)$/.exec(t);
+  if(m && m[1].trim()) return m[1].trim();
+  return t;
 }
 
 function importarExtrato(rows, cols, statusEl){
@@ -1826,6 +1860,12 @@ function importarExtrato(rows, cols, statusEl){
   const planosIgnorados = new Set();
   const bancosIgnorados = new Set();
   let entradas = 0, saidas = 0, lancamentos = 0, saldosAnteriores = 0, foraDoResultado = 0;
+  // Regra 4 (aportes GAMEL) e regra 5 (transferências internas): ficam fora do resultado
+  // operacional e alimentam os blocos próprios do painel.
+  const aportes = [];
+  const transferencias = [];
+  let apRecebidos = 0, apEnviados = 0, apSaldoInicial = 0, apOutrasReceitas = 0;
+  let temContaGamel = false, totalTransferencias = 0;
 
   const cel = (row, idx)=> (idx == null ? '' : (row[idx] == null ? '' : row[idx]));
   const contaDe = (loja, banco)=>{
@@ -1833,6 +1873,8 @@ function importarExtrato(rows, cols, statusEl){
     if(!contas.has(chave)) contas.set(chave, { unidade: loja, banco: banco, saldoInicial:0, entradas:0, saidas:0 });
     return contas.get(chave);
   };
+  // Só aqui, depois que `cel` existe: as empresas do grupo saem da própria coluna Empresa.
+  const grupo = nomesDoGrupo(rows, cols, cel);
 
   for(let i = cols.headerRow + 1; i < rows.length; i++){
     const row = rows[i];
@@ -1853,10 +1895,67 @@ function importarExtrato(rows, cols, statusEl){
 
     if(ehSaldoAnterior){
       const v = parsePlanilhaValue(cel(row, cols.saldo));
+      if(/gamel/.test(normalizeLabel(cel(row, cols.empresa)))){ apSaldoInicial += v; temContaGamel = true; }
       conta.saldoInicial += v;
       if(bancoKey){ bancos[bancoKey].saldoInicial += v; bancosVistos[bancoKey] = true; }
       else if(bancoNome) bancosIgnorados.add(bancoNome);
       saldosAnteriores++;
+      continue;
+    }
+
+    const catNormPre = normalizeLabel(cel(row, cols.categoria));
+    const descNorm = normalizeLabel(desc);
+    const valorPre = parsePlanilhaValue(valorCru);
+    const tipoPre = normalizeLabel(cel(row, cols.tipo));
+    const entradaPre = tipoPre.startsWith('entrada') || tipoPre.startsWith('credito') ? true
+                     : (tipoPre.startsWith('saida') || tipoPre.startsWith('debito') ? false : valorPre >= 0);
+    const empresaNome = String(cel(row, cols.empresa) || '').trim();
+
+    // Regra permanente 4: na conta GAMEL, só a categoria de aporte é aporte. Ela sai do
+    // resultado operacional e vai para o bloco de Aportes GAMEL, com as duas pontas.
+    if(catNormPre.startsWith('aporte')){
+      const v = Math.abs(valorPre);
+      if(v > 0){
+        const contraparte = contraparteDaDescricao(desc);
+        aportes.push({
+          data: formatDateBR(extratoDateToISO(cel(row, cols.data)) || currentDate),
+          origem: entradaPre ? contraparte : 'GAMEL',
+          destino: entradaPre ? 'GAMEL' : contraparte,
+          unidade: lojaNome || '—',
+          banco: bancoNome || '—',
+          valor: v,
+          tipo: entradaPre ? 'Aporte recebido' : 'Aporte enviado',
+          categoria: String(cel(row, cols.categoria) || '').trim(),
+          descricao: desc
+        });
+        if(entradaPre) apRecebidos += v; else apEnviados += v;
+        foraDoResultado += v;
+        temContaGamel = true;
+      }
+      continue;
+    }
+
+    // Demais movimentos da conta GAMEL seguem como receita/despesa normal (regra 4), e as
+    // entradas dela também aparecem como "outras receitas" no bloco de aportes.
+    if(entradaPre && /gamel/.test(normalizeLabel(empresaNome))){
+      apOutrasReceitas += Math.abs(valorPre);
+      temContaGamel = true;
+    }
+
+    // Regra permanente 5: saída cujo favorecido é outra empresa do próprio grupo é
+    // transferência interna — fica fora das saídas operacionais e vai para o bloco próprio.
+    if(!entradaPre && grupo.some(nome => descNorm.includes(nome))){
+      const v = Math.abs(valorPre);
+      if(v > 0){
+        transferencias.push({
+          origem: [lojaNome, empresaNome].filter(Boolean).join(' — ') || '—',
+          destino: contraparteDaDescricao(desc),
+          valor: v,
+          descricao: desc
+        });
+        totalTransferencias += v;
+        foraDoResultado += v;
+      }
       continue;
     }
 
@@ -1933,6 +2032,21 @@ function importarExtrato(rows, cols, statusEl){
     state.fechamentoReal[k].saidas       = bancos[k].saidas;
   });
 
+  // Estes dois blocos são recalculados inteiros a cada importação, inclusive quando o extrato
+  // não traz nenhum lançamento do tipo — senão sobrariam na tela os lançamentos da importação
+  // anterior, como se fossem deste dia.
+  state.transferencias.total = totalTransferencias;
+  state.transferencias.lista = transferencias;
+  // Os aportes só são mexidos quando a conta GAMEL aparece no extrato; sem ela, o bloco fica
+  // como estava, para não apagar o que foi digitado à mão.
+  if(temContaGamel){
+    state.aportesGamel.saldoInicial   = apSaldoInicial;
+    state.aportesGamel.recebidos      = apRecebidos;
+    state.aportesGamel.enviados       = apEnviados;
+    state.aportesGamel.outrasReceitas = apOutrasReceitas;
+    state.aportesGamel.lista          = aportes;
+  }
+
   state.lojas = Array.from(contas.values())
     .filter(l => l.saldoInicial || l.entradas || l.saidas)
     .sort((a,b) => a.unidade.localeCompare(b.unidade,'pt-BR') || a.banco.localeCompare(b.banco,'pt-BR'));
@@ -1947,11 +2061,15 @@ function importarExtrato(rows, cols, statusEl){
   const listaBancos = Object.keys(bancosVistos).map(k=>nomeBanco[k]);
   if(listaBancos.length) preenchidos.push('fechamento real (' + listaBancos.join(', ') + ')');
   preenchidos.push(state.lojas.length + ' linha(s) na tabela por loja');
+  if(aportes.length) preenchidos.push(aportes.length + ' aporte(s) GAMEL');
+  if(transferencias.length) preenchidos.push(transferencias.length + ' transferência(s) interna(s)');
 
   let msg = `Extrato de ${formatDateBR(currentDate)} importado: ${lancamentos} lançamento(s) e ${saldosAnteriores} saldo(s) anterior(es). `
           + `Preenchi ${preenchidos.join('; ')}. `
           + `O que o extrato não traz (despesas urgentes, limites, transferências, aportes e projeção) ficou como estava — é só digitar por cima, que salva sozinho.`;
-  if(foraDoResultado) msg += ` Deixei ${formatBRL(foraDoResultado)} de mora/encargos do Bradesco fora do resultado, conforme a regra permanente 3.`;
+  if(foraDoResultado) msg += ` Ficaram ${formatBRL(foraDoResultado)} fora do resultado operacional (mora/encargos do Bradesco, aportes GAMEL e transferências internas), conforme as regras permanentes 3, 4 e 5.`;
+  if(!aportes.length) msg += ' Não havia nenhum lançamento com categoria de aporte GAMEL neste extrato.';
+  if(!transferencias.length) msg += ` Não encontrei transferências internas: nenhuma saída tinha como favorecido uma das ${grupo.length} empresa(s) que aparecem na coluna Empresa deste extrato.`;
   if(multiplasDatas) msg += ` Atenção: o arquivo tem lançamentos de mais de uma data; usei ${formatDateBR(currentDate)}, a mais frequente.`;
   if(planosIgnorados.size) msg += ` Planos de conta que não sei classificar: ${[...planosIgnorados].slice(0,4).join(', ')}${planosIgnorados.size>4?'…':''} — entraram nas saídas totais, mas não na composição.`;
   if(bancosIgnorados.size) msg += ` Bancos fora de Sicredi/Bradesco/Inter: ${[...bancosIgnorados].slice(0,4).join(', ')}${bancosIgnorados.size>4?'…':''} — contam no total e na tabela por loja, mas não têm bloco próprio no fechamento real.`;
