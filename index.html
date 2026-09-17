@@ -2104,11 +2104,18 @@ function importarExtrato(rows, cols, statusEl){
   state.resumo.saidas   = saidas;
   // Regra permanente 1: o saldo inicial do resumo considera SOMENTE as contas Sicredi.
   // Bradesco e Inter ficam de fora (os saldos deles seguem visíveis no bloco "Fechamento real").
-  if(bancosVistos.sicredi) state.resumo.saldoInicial = bancos.sicredi.saldoInicial;
+  //
+  // O extrato só traz "SALDO ANTERIOR" das contas que tiveram movimento no dia, então o saldo
+  // inicial que sai daqui pode vir incompleto (em 15/09 deu 77.160,96 contra os 77.291,15 reais
+  // do Sicredi). Por isso ele só é preenchido quando o campo ainda está zerado: uma vez que
+  // alguém digite o valor certo do extrato do banco, as importações seguintes não o apagam.
+  if(bancosVistos.sicredi && !state.resumo.saldoInicial) state.resumo.saldoInicial = bancos.sicredi.saldoInicial;
 
   Object.keys(compVistos).forEach(k => { state.composicaoSaidas[k] = comp[k]; });
   Object.keys(bancosVistos).forEach(k => {
-    state.fechamentoReal[k].saldoInicial = bancos[k].saldoInicial;
+    // Entradas e saídas vêm do extrato e são sempre recalculadas; o saldo inicial, não
+    // (ver a nota acima sobre a cobertura do "SALDO ANTERIOR").
+    if(!state.fechamentoReal[k].saldoInicial) state.fechamentoReal[k].saldoInicial = bancos[k].saldoInicial;
     state.fechamentoReal[k].entradas     = bancos[k].entradas;
     state.fechamentoReal[k].saidas       = bancos[k].saidas;
   });
@@ -2152,6 +2159,7 @@ function importarExtrato(rows, cols, statusEl){
           + `O que o extrato não traz (despesas urgentes, limites, transferências, aportes e projeção) ficou como estava — é só digitar por cima, que salva sozinho.`;
   if(foraDoResultado) msg += ` Ficaram ${formatBRL(foraDoResultado)} fora do resultado operacional (aportes GAMEL, transferências internas e vendas no iFood), conforme as regras permanentes 4, 5 e 6.`;
   if(iFoodFora) msg += ` Desse total, ${formatBRL(iFoodFora)} são vendas no iFood.`;
+  if(saldosAnteriores) msg += ` Confira os saldos iniciais por banco: o extrato traz o saldo anterior de ${saldosAnteriores} conta(s), só as que tiveram movimento no dia, então o valor pode vir incompleto. Depois de digitar o saldo certo do extrato do banco, as próximas importações não o sobrescrevem.`;
   if(!aportes.length) msg += ' Não havia nenhum lançamento com categoria de aporte GAMEL neste extrato.';
   if(!transferencias.length) msg += ' Não havia nenhum lançamento com categoria de transferência entre lojas neste extrato.';
   if(transfIndevidas) msg += ` ATENÇÃO: ${transfIndevidas} transferência(s), somando ${formatBRL(transfIndevidasValor)}, foram para contas que não estão na planilha de contas do grupo — estão marcadas na tabela de Transferências para você conferir.`;
