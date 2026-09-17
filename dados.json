@@ -3,14 +3,14 @@
     "resumo": {
       "saldoInicial": 77160.96,
       "entradas": 111491.04,
-      "saidas": 164329.78
+      "saidas": 164441.82
     },
     "despesasUrgentes": 0,
     "composicaoSaidas": {
       "cmv": 134982.27,
       "cf": 0,
       "cmo": 13911.75,
-      "opex": 1306,
+      "opex": 1418.04,
       "royalties": 14070.36
     },
     "lojas": [
@@ -89,7 +89,7 @@
         "banco": "Bradesco Empresas",
         "saldoInicial": -8640,
         "entradas": 75.38,
-        "saidas": 0
+        "saidas": 75.38
       },
       {
         "unidade": "BIGGS 06",
@@ -180,7 +180,7 @@
         "banco": "Bradesco Empresas",
         "saldoInicial": -15000,
         "entradas": 850.42,
-        "saidas": 168.5
+        "saidas": 205.16
       },
       {
         "unidade": "MAPOLI",
@@ -215,10 +215,10 @@
       "disponivel": 0
     },
     "aportesGamel": {
-      "saldoInicial": 0,
+      "saldoInicial": 417.35,
       "recebidos": 0,
       "enviados": 0,
-      "outrasReceitas": 0,
+      "outrasReceitas": 150,
       "lista": []
     },
     "projecaoSemana": {
@@ -236,7 +236,7 @@
       "bradesco": {
         "saldoInicial": -43925.56,
         "entradas": 1009.76,
-        "saidas": 674
+        "saidas": 786.04
       },
       "inter": {
         "saldoInicial": -14930.21,
@@ -247,7 +247,7 @@
   },
   "_meta": {
     "2026-09-15": {
-      "publicadoEm": "2026-09-17T13:53:30.689Z",
+      "publicadoEm": "2026-09-17T14:42:06.214Z",
       "autor": "Larissa"
     }
   }
