@@ -916,11 +916,17 @@ let filterBanco = '';
 // ---------- Regras permanentes de classificação (aplicadas a cada extrato importado) ----------
 // 1) Saldo inicial considera somente contas Sicredi (Bradesco e Inter ficam de fora do saldo inicial).
 // 2) Entradas do Bradesco entram normalmente como receita operacional.
-// 3) Saídas de "mora/encargos" do Bradesco (uso de cheque especial) NÃO entram nas saídas operacionais
-//    (não aparecem em nenhum card do painel; ficam de fora do resultado por definição).
+// 3) REVISTA: saídas de "mora/encargos" do Bradesco entram nas saídas operacionais normalmente.
+//    A regra antiga as deixava de fora, mas o total do painel precisa fechar com o total do
+//    extrato consolidado do dia — em 15/09 eram R$ 112,04 de diferença.
 // 4) Na conta GAMEL, somente a categoria "Aporte — Transferência entre contas (GAMEL)" é tratada como aporte
 //    (fica fora do resultado operacional). As demais categorias da GAMEL seguem como receita/despesa normal.
 // 5) Transferências internas entre lojas ficam fora das entradas/saídas operacionais.
+// 6) Vendas no iFood não entram no resultado do dia.
+//
+// IMPORTANTE ao exportar o extrato: deixe TODAS as categorias selecionadas. O painel é que
+// aplica as regras acima. Exportar já filtrado faz os aportes, as transferências entre lojas e
+// o iFood sumirem do arquivo — e aí os blocos do painel ficam vazios sem motivo aparente.
 
 // ---------- Dataset padrão — 20/08/2026 (seed histórico) ----------
 function defaultDataset(){
@@ -1865,6 +1871,7 @@ function importarExtrato(rows, cols, statusEl){
   const aportes = [];
   const transferencias = [];
   let apRecebidos = 0, apEnviados = 0, apSaldoInicial = 0, apOutrasReceitas = 0;
+  let iFoodFora = 0;
   let temContaGamel = false, totalTransferencias = 0;
 
   const cel = (row, idx)=> (idx == null ? '' : (row[idx] == null ? '' : row[idx]));
@@ -1959,13 +1966,16 @@ function importarExtrato(rows, cols, statusEl){
       continue;
     }
 
-    // Regra permanente 3: saídas de mora/encargos do Bradesco (uso de cheque especial) ficam
-    // fora do resultado operacional — não entram em nenhum card do painel.
-    const catNorm = normalizeLabel(cel(row, cols.categoria));
-    if(bancoKey === 'bradesco' && (catNorm === 'outros encargos' || /mora.*encargo/.test(normalizeLabel(desc)))){
-      foraDoResultado += Math.abs(parsePlanilhaValue(valorCru));
+    // Regra permanente 6: vendas no iFood não entram no resultado do dia.
+    if(catNormPre.includes('ifood')){
+      foraDoResultado += Math.abs(valorPre);
+      iFoodFora += Math.abs(valorPre);
       continue;
     }
+
+    // Mora/encargos do Bradesco entram nas saídas normalmente, para o total do painel bater
+    // com o total do extrato consolidado. (Ver a nota na regra 3, no topo do script.)
+    const catNorm = catNormPre;
 
     const valor = parsePlanilhaValue(valorCru);
     const tipoNorm = normalizeLabel(cel(row, cols.tipo));
@@ -2067,7 +2077,8 @@ function importarExtrato(rows, cols, statusEl){
   let msg = `Extrato de ${formatDateBR(currentDate)} importado: ${lancamentos} lançamento(s) e ${saldosAnteriores} saldo(s) anterior(es). `
           + `Preenchi ${preenchidos.join('; ')}. `
           + `O que o extrato não traz (despesas urgentes, limites, transferências, aportes e projeção) ficou como estava — é só digitar por cima, que salva sozinho.`;
-  if(foraDoResultado) msg += ` Ficaram ${formatBRL(foraDoResultado)} fora do resultado operacional (mora/encargos do Bradesco, aportes GAMEL e transferências internas), conforme as regras permanentes 3, 4 e 5.`;
+  if(foraDoResultado) msg += ` Ficaram ${formatBRL(foraDoResultado)} fora do resultado operacional (aportes GAMEL, transferências internas e vendas no iFood), conforme as regras permanentes 4, 5 e 6.`;
+  if(iFoodFora) msg += ` Desse total, ${formatBRL(iFoodFora)} são vendas no iFood.`;
   if(!aportes.length) msg += ' Não havia nenhum lançamento com categoria de aporte GAMEL neste extrato.';
   if(!transferencias.length) msg += ` Não encontrei transferências internas: nenhuma saída tinha como favorecido uma das ${grupo.length} empresa(s) que aparecem na coluna Empresa deste extrato.`;
   if(multiplasDatas) msg += ` Atenção: o arquivo tem lançamentos de mais de uma data; usei ${formatDateBR(currentDate)}, a mais frequente.`;
