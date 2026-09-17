@@ -825,14 +825,14 @@
   <section>
     <div class="section-title">6. Fechamento real — conferência com o extrato bancário</div>
     <div class="note" style="margin:-4px 0 12px 4px;">
-      O "Resumo do dia" (seção 1) é a visão operacional: saldo inicial só de Sicredi, entradas/saídas de todos os bancos, mas sem aportes e sem transferências. Aqui embaixo está o fechamento real de cada banco — saldo inicial + entradas − saídas = saldo final — batendo 1:1 com o extrato, aportes e transferências inclusos.
+      O "Resumo do dia" (seção 1) é a visão operacional: saldo inicial só de Sicredi e entradas/saídas de todos os bancos. Aqui embaixo está o fechamento de cada banco — saldo inicial + entradas − saídas = saldo final — batendo com o extrato de cada conta. Em todos, aportes, transferências entre contas e vendas no iFood ficam de fora: são dinheiro circulando dentro do grupo ou repasse a receber, não resultado do dia. O saldo inicial vem do fechamento do dia anterior; se você digitar por cima, o valor digitado passa a valer.
     </div>
     <div class="grid cols-3">
       <div class="card tone-green bank-card">
         <div class="label">🟢 Sicredi — fechamento real</div>
         <div class="bank-field"><span>Saldo inicial</span><input class="money bank-input" id="realSicrediSI" value="28114.78"></div>
-        <div class="bank-field"><span>Entradas reais (tudo incluso)</span><input class="money bank-input" id="realSicrediEN" value="547778.85"></div>
-        <div class="bank-field"><span>Saídas reais (tudo incluso)</span><input class="money bank-input" id="realSicrediSA" value="498602.48"></div>
+        <div class="bank-field"><span>Entradas reais</span><input class="money bank-input" id="realSicrediEN" value="547778.85"></div>
+        <div class="bank-field"><span>Saídas reais</span><input class="money bank-input" id="realSicrediSA" value="498602.48"></div>
         <div class="bank-final"><span>Saldo final real</span><span id="realSicrediFinal">R$ 0,00</span></div>
         <div class="subnote" id="realSicrediBridge"></div>
       </div>
@@ -850,7 +850,7 @@
         <div class="bank-field"><span>Entradas reais</span><input class="money bank-input" id="realInterEN" value="4031.51"></div>
         <div class="bank-field"><span>Saídas reais</span><input class="money bank-input" id="realInterSA" value="5635.71"></div>
         <div class="bank-final"><span>Saldo final real</span><span id="realInterFinal">R$ 0,00</span></div>
-        <div class="subnote">Conferido com o extrato: saldo inicial e entradas batem. As saídas reais (R$ 5.635,71) incluem os R$ 5.525,57 de aportes e R$ 110,14 de transferências que saíram por aqui — no extrato do banco esse valor aparece "desmarcado" e o "Saiu" some como R$ 0,00, por isso o saldo final não fecha lá; aqui incluímos para fechar certinho. Inclui também a conta consolidadora Vespa Distribuidora (Serbase Food), com saldo negativo de R$ 3.980.098,85 — provável conta de tesouraria/matriz do grupo, não específica das lojas do Grupo Londrino.</div>
+        <div class="subnote">Contas do Inter, sem aportes, transferências entre contas nem iFood.</div>
       </div>
     </div>
     <div class="card" style="margin-top:12px; text-align:center;">
@@ -1531,7 +1531,9 @@ function recalc(){
 
   // Ponte explicativa: saldo final real do Sicredi = saldo final operacional + aportes e transferências líquidos
   document.getElementById('realSicrediBridge').textContent =
-    `= saldo final operacional (${formatBRL(saldoFinal)}) + aportes e transferências líquidos que só passam pelo Sicredi (${formatBRL(rSFinal - saldoFinal)})`;
+    (Math.abs(rSFinal - saldoFinal) < 0.01)
+      ? 'Fecha com o saldo final do Resumo do dia.'
+      : `= saldo final do Resumo do dia (${formatBRL(saldoFinal)}) ${rSFinal >= saldoFinal ? '+' : '−'} ${formatBRL(Math.abs(rSFinal - saldoFinal))} de Bradesco e Inter, que não entram no saldo inicial do resumo.`;
 
   // Totais das lojas (sempre com base em TODAS as lojas, não só as filtradas)
   const totSI = state.lojas.reduce((a,l)=>a+l.saldoInicial,0);
@@ -2102,23 +2104,28 @@ function importarExtrato(rows, cols, statusEl){
 
   state.resumo.entradas = entradas;
   state.resumo.saidas   = saidas;
-  // Regra permanente 1: o saldo inicial do resumo considera SOMENTE as contas Sicredi.
-  // Bradesco e Inter ficam de fora (os saldos deles seguem visíveis no bloco "Fechamento real").
-  //
-  // O extrato só traz "SALDO ANTERIOR" das contas que tiveram movimento no dia, então o saldo
-  // inicial que sai daqui pode vir incompleto (em 15/09 deu 77.160,96 contra os 77.291,15 reais
-  // do Sicredi). Por isso ele só é preenchido quando o campo ainda está zerado: uma vez que
-  // alguém digite o valor certo do extrato do banco, as importações seguintes não o apagam.
-  if(bancosVistos.sicredi && !state.resumo.saldoInicial) state.resumo.saldoInicial = bancos.sicredi.saldoInicial;
+  // Saldo inicial de cada banco, em ordem de confiança:
+  //   1. o que já está digitado (alguém conferiu no extrato do banco);
+  //   2. o fechamento do dia anterior no painel;
+  //   3. a soma dos "SALDO ANTERIOR" deste extrato (pode vir incompleta).
+  const diaAnt = diaAnteriorCom(currentDate);
+  const fechouOntem = diaAnt ? fechamentoRealDoDia(diaAnt) : null;
+  let origemSaldoInicial = 'do extrato';
+  if(fechouOntem) origemSaldoInicial = 'do fechamento de ' + formatDateBR(diaAnt);
 
   Object.keys(compVistos).forEach(k => { state.composicaoSaidas[k] = comp[k]; });
   Object.keys(bancosVistos).forEach(k => {
-    // Entradas e saídas vêm do extrato e são sempre recalculadas; o saldo inicial, não
-    // (ver a nota acima sobre a cobertura do "SALDO ANTERIOR").
-    if(!state.fechamentoReal[k].saldoInicial) state.fechamentoReal[k].saldoInicial = bancos[k].saldoInicial;
-    state.fechamentoReal[k].entradas     = bancos[k].entradas;
-    state.fechamentoReal[k].saidas       = bancos[k].saidas;
+    // Entradas e saídas vêm do extrato e são sempre recalculadas — essas o arquivo traz certas,
+    // já sem aportes, sem transferências entre contas e sem iFood.
+    state.fechamentoReal[k].entradas = bancos[k].entradas;
+    state.fechamentoReal[k].saidas   = bancos[k].saidas;
+    if(state.fechamentoReal[k].saldoInicial) return;           // já conferido a mão, não mexe
+    state.fechamentoReal[k].saldoInicial = (fechouOntem && fechouOntem[k] != null)
+      ? fechouOntem[k]
+      : bancos[k].saldoInicial;
   });
+  // Regra permanente 1: o saldo inicial do resumo é o do Sicredi.
+  if(!state.resumo.saldoInicial) state.resumo.saldoInicial = state.fechamentoReal.sicredi.saldoInicial;
 
   // Estes dois blocos são recalculados inteiros a cada importação, inclusive quando o extrato
   // não traz nenhum lançamento do tipo — senão sobrariam na tela os lançamentos da importação
@@ -2159,7 +2166,16 @@ function importarExtrato(rows, cols, statusEl){
           + `O que o extrato não traz (despesas urgentes, limites, transferências, aportes e projeção) ficou como estava — é só digitar por cima, que salva sozinho.`;
   if(foraDoResultado) msg += ` Ficaram ${formatBRL(foraDoResultado)} fora do resultado operacional (aportes GAMEL, transferências internas e vendas no iFood), conforme as regras permanentes 4, 5 e 6.`;
   if(iFoodFora) msg += ` Desse total, ${formatBRL(iFoodFora)} são vendas no iFood.`;
-  if(saldosAnteriores) msg += ` Confira os saldos iniciais por banco: o extrato traz o saldo anterior de ${saldosAnteriores} conta(s), só as que tiveram movimento no dia, então o valor pode vir incompleto. Depois de digitar o saldo certo do extrato do banco, as próximas importações não o sobrescrevem.`;
+  // Mostra os três saldos iniciais usados: é a conferência mais rápida de que o encadeamento
+  // pegou o dia certo, e de qual banco ainda precisa de ajuste a mão.
+  const nomesB = { sicredi:'Sicredi', bradesco:'Bradesco', inter:'Inter' };
+  const usados = Object.keys(nomesB)
+    .filter(k => bancosVistos[k])
+    .map(k => `${nomesB[k]} ${formatBRL(state.fechamentoReal[k].saldoInicial)}`)
+    .join(' · ');
+  if(usados) msg += ` Saldos iniciais ${origemSaldoInicial}: ${usados}. Confira com o extrato de cada banco — o que você digitar por cima passa a valer e não é mais sobrescrito.`;
+  if(!fechouOntem) msg += ` Atenção: não há dia anterior no painel, então usei a soma dos ${saldosAnteriores} "SALDO ANTERIOR" do próprio arquivo — o extrato só traz as contas que tiveram movimento, então confira com o extrato do banco.`;
+  msg += ' Saldo inicial digitado a mão não é sobrescrito nas importações seguintes.';
   if(!aportes.length) msg += ' Não havia nenhum lançamento com categoria de aporte GAMEL neste extrato.';
   if(!transferencias.length) msg += ' Não havia nenhum lançamento com categoria de transferência entre lojas neste extrato.';
   if(transfIndevidas) msg += ` ATENÇÃO: ${transfIndevidas} transferência(s), somando ${formatBRL(transfIndevidasValor)}, foram para contas que não estão na planilha de contas do grupo — estão marcadas na tabela de Transferências para você conferir.`;
@@ -2449,6 +2465,29 @@ function ultimoDiaDisponivel(){
   Object.keys(loadAll() || {}).filter(eData).forEach(d => dias.add(d));
   if(!dias.size) return null;
   return [...dias].sort().pop();
+}
+
+// Saldo inicial de hoje = saldo final de ontem. É o único jeito de acertar isso sozinho: o
+// extrato exportado só traz o "SALDO ANTERIOR" das contas que tiveram movimento no dia, então
+// as contas paradas somem e o total vem furado (em 15/09, R$ 130,19 a menos no Sicredi e mais
+// de R$ 115 mil no Bradesco). Encadeando pelo dia anterior o valor fecha exato.
+function diaAnteriorCom(date){
+  const eData = k => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(k);
+  const dias = new Set(['2026-08-20', '2026-09-14']); // dias que já vêm no painel
+  Object.keys(publicados || {}).filter(eData).forEach(d => dias.add(d));
+  Object.keys(loadAll() || {}).filter(eData).forEach(d => dias.add(d));
+  const anteriores = [...dias].filter(d => d < date).sort();
+  return anteriores.length ? anteriores[anteriores.length - 1] : null;
+}
+function fechamentoRealDoDia(date){
+  const d = getDataset(date);
+  if(!d || !d.fechamentoReal) return null;
+  const fecha = c => (c.saldoInicial || 0) + (c.entradas || 0) - (c.saidas || 0);
+  return {
+    sicredi:  fecha(d.fechamentoReal.sicredi),
+    bradesco: fecha(d.fechamentoReal.bradesco),
+    inter:    fecha(d.fechamentoReal.inter)
+  };
 }
 
 function descartarRascunho(){

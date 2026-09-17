@@ -68,18 +68,38 @@ dois e nas próximas é só clicar em Publicar.
 ## Regras permanentes de classificação
 
 Estão documentadas no topo do `<script>` em `index.html` e valem para todo extrato importado.
-Todas são aplicadas automaticamente na importação:
+Todas são aplicadas automaticamente:
 
 - **1** — saldo inicial do resumo considera só as contas Sicredi
 - **2** — entradas do Bradesco entram como receita operacional
-- **3** — mora/encargos do Bradesco ficam fora do resultado
-- **4** — na conta GAMEL, só a categoria que começa com "Aporte" é tratada como aporte; ela sai
-  do resultado operacional e alimenta o bloco de Aportes GAMEL com as duas pontas
-- **5** — saída cujo favorecido é outra empresa do grupo é transferência interna: sai das saídas
-  operacionais e vai para o bloco de Transferências
+- **3** — mora/encargos do Bradesco contam nas saídas, para o painel fechar com o extrato
+- **4** — categoria "Aporte - Transf. entre contas (GAMEL)": uma loja emprestando para outra pela
+  conta GAMEL. Sai do resultado e alimenta o bloco de Aportes, com as duas pontas e o ranking de
+  quem mais empresta e quem mais recebe
+- **5** — categoria "Transf. entre lojas": sai do resultado e vai para o bloco de Transferências
+- **6** — vendas no iFood não entram no resultado do dia
 
-A lista de empresas do grupo usada pela regra 5 é montada a partir da coluna **Empresa** do
-próprio extrato, e a comparação usa o nome inteiro ("ELMA FOODS"), nunca só o começo — cortar
-em "SICA" faria um Pix de uma cliente chamada Jessica virar transferência interna. Como
-consequência, uma transferência para uma empresa do grupo cuja conta não esteja no arquivo não
-é identificada, e precisa ser lançada à mão.
+Quem classifica os aportes e as transferências é a **categoria do próprio sistema**, nunca o nome
+na descrição: o grupo paga Royalties à ML Consultoria, que é do grupo, e casar por nome
+transformaria 17 pagamentos de Royalties em transferência interna.
+
+A planilha de contas do Sicredi está no código como lista de CNPJs (`CONTAS_GRUPO`) e serve para
+identificar a outra ponta de cada operação e para marcar transferência que saiu para conta fora
+da lista. Quando as contas mudarem, é essa constante que precisa ser atualizada.
+
+## Saldo inicial
+
+O extrato exportado só traz "SALDO ANTERIOR" das contas que tiveram movimento no dia, então a
+soma dele vem incompleta. O painel usa, nesta ordem:
+
+1. o valor já digitado no campo (alguém conferiu no extrato do banco);
+2. o fechamento do dia anterior no painel — saldo inicial + entradas − saídas;
+3. a soma dos "SALDO ANTERIOR" do arquivo, se não houver dia anterior.
+
+Digitado a mão, o valor não é sobrescrito pelas importações seguintes.
+
+## Exportando o extrato
+
+Deixe **todas as categorias selecionadas** antes de exportar. O painel é que aplica as regras.
+Exportar filtrado remove do arquivo os aportes, as transferências entre lojas e o iFood, e os
+blocos ficam vazios sem motivo aparente.
