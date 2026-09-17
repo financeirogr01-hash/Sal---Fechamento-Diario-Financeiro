@@ -40,6 +40,11 @@
   }
   /* Ferramentas discretas no canto do cabeçalho: importar planilha e publicar o dia.
      Ficam recolhidas atrás de um botão apagado, para não competir com os números. */
+  #finalCardBancos{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  #finalCardBancos span{
+    background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.22);
+    border-radius:999px; padding:3px 10px; font-size:12px; white-space:nowrap;
+  }
   header.top .hdr-tools-btn{
     position:absolute; top:14px; right:16px;
     width:30px; height:30px; padding:0;
@@ -631,6 +636,8 @@
       <div class="value" id="finalCardValue">R$ 0,00</div>
       <div class="msg" id="finalCardMsg">—</div>
       <div class="msg" id="finalCardFormula" style="margin-top:2px; font-weight:400; opacity:.85;">Saldo inicial + Entradas − Saídas − Despesas urgentes</div>
+      <div class="msg" id="finalCardBancos" style="margin-top:8px; font-weight:600; opacity:.95;"></div>
+      <div class="msg" id="finalCardBancosNota" style="margin-top:2px; font-weight:400; opacity:.75;">Como cada banco fechou o dia, conforme consta em cada conta.</div>
     </div>
 
     <div class="section-title" style="margin-top:18px; font-size:15px;">Composição das saídas</div>
@@ -768,7 +775,7 @@
         <span class="label" style="display:flex; align-items:center; gap:8px;"><span class="signal-dot" id="aporteSignal"></span> Resultado líquido</span>
         <span class="val" id="aporteResultado">R$ 0,00</span>
       </div>
-      <div class="note" style="margin-top:8px;">Lançamentos da categoria "Aporte — Transf. entre contas (GAMEL)" do dia, direto do extrato bancário — <strong>Entrada</strong> em "Aportes recebidos", <strong>Saída</strong> em "Aportes enviados" (25 operações, 50 lançamentos). É dinheiro circulando entre contas do próprio grupo, por isso o resultado líquido fecha em R$ 0,00.</div>
+      <div class="note" style="margin-top:8px;">Lançamentos da categoria "Aporte — Transf. entre contas (GAMEL)" do dia, direto do extrato bancário — <strong>Entrada</strong> em "Aportes recebidos", <strong>Saída</strong> em "Aportes enviados" — as duas pontas de cada operação. É dinheiro circulando entre contas do próprio grupo: uma loja empresta para outra pela conta GAMEL, por isso o resultado líquido fecha em R$ 0,00.</div>
 
       <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line);">
         <div class="label" style="margin-bottom:8px;">Ranking por loja — quem mais empresta e quem mais recebe</div>
@@ -1437,6 +1444,7 @@ function recalc(){
   document.getElementById('pctCompRoyalties').textContent = pctOf(compRoyalties).toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% das saídas';
   document.getElementById('totCompSaidas').textContent = formatBRL(totComp);
 
+
   const finalCard = document.getElementById('finalCard');
   const finalMsg = document.getElementById('finalCardMsg');
   const statusPill = document.getElementById('statusPill');
@@ -1514,6 +1522,12 @@ function recalc(){
   document.getElementById('realInterFinal').textContent = formatBRL(rIFinal);
 
   document.getElementById('realTotalFinal').textContent = formatBRL(rSFinal + rBFinal + rIFinal);
+
+  // Rastreio: como cada banco fechou o dia. O saldo final do card é o operacional de todos os
+  // bancos; estes são os saldos por conta, que é o que aparece em cada extrato.
+  const bancosDoDia = [['Sicredi', rSFinal], ['Bradesco', rBFinal], ['Inter', rIFinal]];
+  document.getElementById('finalCardBancos').innerHTML = bancosDoDia
+    .map(([nome, v]) => `<span>${nome}: ${formatBRL(v)}</span>`).join('');
 
   // Ponte explicativa: saldo final real do Sicredi = saldo final operacional + aportes e transferências líquidos
   document.getElementById('realSicrediBridge').textContent =
@@ -1814,6 +1828,7 @@ function detectExtratoHeader(rows){
       else if((n === 'loja' || n === 'unidade')                  && cols.loja      == null) cols.loja      = idx;
       else if(n === 'banco'                                      && cols.banco     == null) cols.banco     = idx;
       else if(n === 'empresa'                                    && cols.empresa   == null) cols.empresa   = idx;
+      else if(n === 'cnpj'                                       && cols.cnpj      == null) cols.cnpj      = idx;
     });
     if(cols.data != null && cols.valor != null && cols.banco != null && (cols.tipo != null || cols.saldo != null)){
       return cols;
@@ -1822,24 +1837,55 @@ function detectExtratoHeader(rows){
   return null;
 }
 
-// Empresas do próprio grupo, tiradas da coluna "Empresa" do extrato — é assim que dá para
-// saber que um Pix enviado foi para outra empresa da casa (regra permanente 5) e não para um
-// fornecedor. Usa o nome inteiro ("ELMA FOODS"), nunca só o começo: cortar em "SICA" faria
-// "JESSICA" virar transferência interna.
-function nomesDoGrupo(rows, cols, cel){
-  const nomes = new Set();
-  for(let i = cols.headerRow + 1; i < rows.length; i++){
-    if(!rows[i]) continue;
-    const bruto = String(cel(rows[i], cols.empresa) || '').trim();
-    if(!bruto) continue;
-    const nome = normalizeLabel(bruto)
-      .replace(/^[0-9]+ /, '')                                   // "01 Del Hub Foods" -> "del hub foods"
-      .replace(/ (ltda|sa|s\/a|me|eireli|epp)( .*)?$/, '')        // tira o tipo societário
-      .trim();
-    if(nome.length > 6) nomes.add(nome);
+// Contas do grupo no Sicredi (planilha "contas sicredi"). O CNPJ é o que identifica a outra
+// ponta de uma transferência com segurança — nome não serve: "ML CONSULTORIA" recebe
+// Royalties do grupo, e casar por nome transformaria 17 pagamentos de Royalties em
+// transferência interna.
+const CONTAS_GRUPO = {
+  '58420847000105': { nome: 'AGAPE FOODS LTDA', conta: '70829-8', uso: 'COMPRA E VENDA' },
+  '57896112000190': { nome: 'AMEGE SERVICOS TERCEIRIZADOS LTDA', conta: '70972-4', uso: 'FOLHA DE PAGAMENTO' },
+  '59472783000159': { nome: 'AVI DISTRIBUIDORA DE ALIMENTOS', conta: '65745-8', uso: 'COMPRA, VENDA E FOLHA' },
+  '58420920000149': { nome: 'BRUTI FOODS LTDA', conta: '63923-4', uso: 'COMPRA, VENDA E FOLHA' },
+  '58420923000182': { nome: 'CHEMA FOODS LTDA', conta: '70851-6', uso: 'COMPRA E VENDA' },
+  '53432417000190': { nome: 'CHETON FOODS', conta: '70836-6', uso: 'COMPRA, VENDA E FOLHA' },
+  '59649819000127': { nome: 'DEMAQUI FOODS LTDA', conta: '71700-8', uso: 'COMPRA, VENDA E FOLHA' },
+  '60663757000197': { nome: 'ELMA FOODS LTDA', conta: '63912-7', uso: 'COMPRA E VENDA' },
+  '57911297000164': { nome: 'EUCIVA SERVICOS TERCEIRIZADOS LTDA', conta: '70835-0', uso: 'FOLHA DE PAGAMENTO' },
+  '59184707000148': { nome: 'FUSI FOODS', conta: '70400-7', uso: 'COMPRA E VENDA' },
+  '58420972000115': { nome: 'GALNO SERVICOS TERCEIRIZADOS', conta: '71532-6', uso: 'FOLHA DE PAGAMENTO' },
+  '60927393000105': { nome: 'GAMEL SERVICOS TERCEIRIZADOS LTDA', conta: '66274-4', uso: 'TRANSFERENCIA ENTRE CONTAS' },
+  '60403158000134': { nome: 'JAPI FOODS LTDA', conta: '63896-7', uso: 'COMPRA, VENDA E FOLHA' },
+  '60928833000149': { nome: 'LANA FOODS LTDA', conta: '66232-7', uso: 'COMPRA, VENDA E FOLHA' },
+  '52934334000136': { nome: 'LUAMA FOODS', conta: '66227-9', uso: 'COMPRA, VENDA E FOLHA' },
+  '58420201000128': { nome: 'MADRI FOODS LTDA', conta: '63907-2', uso: 'COMPRA, VENDA E FOLHA' },
+  '57894788000144': { nome: 'MADRIOM SERVICOS TERCEIRIZADOS LTDA', conta: '70828-9', uso: 'FOLHA DE PAGAMENTO' },
+  '57911800000181': { nome: 'MAPASI SERVICOS TERCEIRIZADOS LTDA', conta: '70832-2', uso: 'FOLHA DE PAGAMENTO' },
+  '60663917000106': { nome: 'MARTI FOODS', conta: '65742-4', uso: 'COMPRA E VENDA' },
+  '58423995000183': { nome: 'ML CONSULTORIA', conta: '66328-3', uso: 'COMPRA, VENDA E FOLHA' },
+  '57895291000140': { nome: 'NEMAOM FOODS LTDA', conta: '70835-4', uso: 'COMPRA, VENDA E FOLHA' },
+  '57895581000194': { nome: 'PALADAR SERVICOS TERCEIRIZADOS LTDA', conta: '70942-7', uso: 'FOLHA DE PAGAMENTO' },
+  '57895083000141': { nome: 'PALEZA SERVICOS TERCEIRIZADOS', conta: '70402-0', uso: 'FOLHA DE PAGAMENTO' },
+  '60663807000136': { nome: 'PANTI FOODS LTDA', conta: '66261-7', uso: 'COMPRA, VENDA E FOLHA' },
+  '58423546000135': { nome: 'PIGUI FOODS LTDA', conta: '70833-7', uso: 'COMPRA E VENDA' },
+  '60977372000102': { nome: 'RAMA FOODS LTDA', conta: '81095-8', uso: 'COMPRA, VENDA E FOLHA' },
+  '56227102000107': { nome: 'RETI CONSULTORIA', conta: '65737-0', uso: 'COMPRA, VENDA E FOLHA' },
+  '58423590000145': { nome: 'SICA FOODS LTDA', conta: '63923-8', uso: 'COMPRA E VENDA' },
+  '58423712000101': { nome: 'VERI FOODS LTDA', conta: '71182-7', uso: 'COMPRA, VENDA E FOLHA' },
+};
+// Conta usada só para aporte entre lojas (uma loja emprestando para outra).
+const CNPJ_APORTE = '60927393000105'; // GAMEL SERVICOS TERCEIRIZADOS LTDA
+
+function soDigitos(v){ return String(v == null ? '' : v).replace(/[^0-9]/g, ''); }
+// CNPJs (14) e CPFs (11) citados numa descrição de Pix/TED.
+function documentosNaDescricao(desc){ return String(desc || '').match(/[0-9]{11,14}/g) || []; }
+// A primeira conta do grupo citada na descrição, se houver.
+function contaDoGrupoNaDescricao(desc){
+  for(const doc of documentosNaDescricao(desc)){
+    if(CONTAS_GRUPO[doc]) return { cnpj: doc, ...CONTAS_GRUPO[doc] };
   }
-  return [...nomes];
+  return null;
 }
+
 
 // Nome da outra ponta, para mostrar na lista: o que vem depois do CNPJ/CPF ou do traço.
 function contraparteDaDescricao(desc){
@@ -1872,6 +1918,7 @@ function importarExtrato(rows, cols, statusEl){
   const transferencias = [];
   let apRecebidos = 0, apEnviados = 0, apSaldoInicial = 0, apOutrasReceitas = 0;
   let iFoodFora = 0;
+  let transfEntradas = 0, transfSaidas = 0, transfIndevidas = 0, transfIndevidasValor = 0;
   let temContaGamel = false, totalTransferencias = 0;
 
   const cel = (row, idx)=> (idx == null ? '' : (row[idx] == null ? '' : row[idx]));
@@ -1880,8 +1927,15 @@ function importarExtrato(rows, cols, statusEl){
     if(!contas.has(chave)) contas.set(chave, { unidade: loja, banco: banco, saldoInicial:0, entradas:0, saidas:0 });
     return contas.get(chave);
   };
-  // Só aqui, depois que `cel` existe: as empresas do grupo saem da própria coluna Empresa.
-  const grupo = nomesDoGrupo(rows, cols, cel);
+  // De qual loja é cada CNPJ — sai do próprio extrato, que traz Empresa, CNPJ e Loja lado a lado.
+  // Serve para dizer qual loja emprestou e qual recebeu num aporte lançado na conta GAMEL.
+  const lojaPorCnpj = {};
+  for(let i = cols.headerRow + 1; i < rows.length; i++){
+    if(!rows[i]) continue;
+    const doc = soDigitos(cel(rows[i], cols.cnpj));
+    const lj  = String(cel(rows[i], cols.loja) || '').trim();
+    if(doc.length === 14 && lj && lj !== '—' && !lojaPorCnpj[doc]) lojaPorCnpj[doc] = lj;
+  }
 
   for(let i = cols.headerRow + 1; i < rows.length; i++){
     const row = rows[i];
@@ -1911,29 +1965,39 @@ function importarExtrato(rows, cols, statusEl){
     }
 
     const catNormPre = normalizeLabel(cel(row, cols.categoria));
-    const descNorm = normalizeLabel(desc);
     const valorPre = parsePlanilhaValue(valorCru);
     const tipoPre = normalizeLabel(cel(row, cols.tipo));
     const entradaPre = tipoPre.startsWith('entrada') || tipoPre.startsWith('credito') ? true
                      : (tipoPre.startsWith('saida') || tipoPre.startsWith('debito') ? false : valorPre >= 0);
     const empresaNome = String(cel(row, cols.empresa) || '').trim();
 
-    // Regra permanente 4: na conta GAMEL, só a categoria de aporte é aporte. Ela sai do
-    // resultado operacional e vai para o bloco de Aportes GAMEL, com as duas pontas.
+    const cnpjDaLinha = soDigitos(cel(row, cols.cnpj));
+    const contaParte  = contaDoGrupoNaDescricao(desc);   // a outra ponta, quando é do grupo
+    const ehContaAporte = cnpjDaLinha === CNPJ_APORTE;   // a linha é do extrato da própria GAMEL
+
+    // Regra permanente 4: categoria de aporte = uma loja emprestando para outra pela conta
+    // GAMEL. Sai do resultado operacional e vai para o bloco de Aportes.
     if(catNormPre.startsWith('aporte')){
       const v = Math.abs(valorPre);
       if(v > 0){
-        const contraparte = contraparteDaDescricao(desc);
+        const contraparte = (contaParte && contaParte.nome) || contraparteDaDescricao(desc);
+        // A loja do ranking é sempre a da OUTRA ponta: na conta GAMEL ela vem do CNPJ citado
+        // na descrição; na conta da loja, é a própria loja da linha.
+        const lojaContraparte = (contaParte && lojaPorCnpj[contaParte.cnpj]) || '';
+        const unidadeRanking = ehContaAporte ? (lojaContraparte || contraparte) : (lojaNome || contraparte);
         aportes.push({
           data: formatDateBR(extratoDateToISO(cel(row, cols.data)) || currentDate),
           origem: entradaPre ? contraparte : 'GAMEL',
           destino: entradaPre ? 'GAMEL' : contraparte,
-          unidade: lojaNome || '—',
+          unidade: unidadeRanking || '—',
           banco: bancoNome || '—',
           valor: v,
           tipo: entradaPre ? 'Aporte recebido' : 'Aporte enviado',
           categoria: String(cel(row, cols.categoria) || '').trim(),
-          descricao: desc
+          descricao: desc,
+          // O ranking soma só a ponta lançada na conta GAMEL, senão cada operação contaria
+          // duas vezes (uma na conta da loja, outra na da GAMEL).
+          perspectiva: ehContaAporte ? 'gamel' : 'loja'
         });
         if(entradaPre) apRecebidos += v; else apEnviados += v;
         foraDoResultado += v;
@@ -1949,17 +2013,24 @@ function importarExtrato(rows, cols, statusEl){
       temContaGamel = true;
     }
 
-    // Regra permanente 5: saída cujo favorecido é outra empresa do próprio grupo é
-    // transferência interna — fica fora das saídas operacionais e vai para o bloco próprio.
-    if(!entradaPre && grupo.some(nome => descNorm.includes(nome))){
+    // Regra permanente 5: transferência entre lojas do grupo. Quem classifica é a categoria do
+    // próprio sistema — casar por nome não funciona (Royalties são pagos à ML Consultoria, que
+    // é do grupo, e virariam transferência).
+    if(catNormPre.includes('transf') && catNormPre.includes('loja')){
       const v = Math.abs(valorPre);
       if(v > 0){
+        // A outra ponta precisa ser uma das contas da planilha "contas sicredi". Se não for,
+        // a transferência é sinalizada para conferência.
+        const permitida = !!contaParte;
+        const outraPonta = (contaParte && contaParte.nome) || contraparteDaDescricao(desc);
         transferencias.push({
-          origem: [lojaNome, empresaNome].filter(Boolean).join(' — ') || '—',
-          destino: contraparteDaDescricao(desc),
+          origem: entradaPre ? outraPonta : ([lojaNome, empresaNome].filter(Boolean).join(' — ') || '—'),
+          destino: entradaPre ? ([lojaNome, empresaNome].filter(Boolean).join(' — ') || '—') : outraPonta,
           valor: v,
-          descricao: desc
+          descricao: (permitida ? '' : '⚠️ FORA DA LISTA DE CONTAS — CONFERIR: ') + desc
         });
+        if(entradaPre) transfEntradas += v; else transfSaidas += v;
+        if(!permitida){ transfIndevidas++; transfIndevidasValor += v; }
         totalTransferencias += v;
         foraDoResultado += v;
       }
@@ -2045,7 +2116,9 @@ function importarExtrato(rows, cols, statusEl){
   // Estes dois blocos são recalculados inteiros a cada importação, inclusive quando o extrato
   // não traz nenhum lançamento do tipo — senão sobrariam na tela os lançamentos da importação
   // anterior, como se fossem deste dia.
-  state.transferencias.total = totalTransferencias;
+  // O card "Total movimentado" mostra um lado só (entradas e saídas se espelham quando as duas
+  // pontas estão no extrato); se só houver um lado, mostra o que existe.
+  state.transferencias.total = (transfEntradas && transfSaidas) ? transfEntradas : (transfEntradas || transfSaidas);
   state.transferencias.lista = transferencias;
   // Os aportes só são mexidos quando a conta GAMEL aparece no extrato; sem ela, o bloco fica
   // como estava, para não apagar o que foi digitado à mão.
@@ -2072,7 +2145,7 @@ function importarExtrato(rows, cols, statusEl){
   if(listaBancos.length) preenchidos.push('fechamento real (' + listaBancos.join(', ') + ')');
   preenchidos.push(state.lojas.length + ' linha(s) na tabela por loja');
   if(aportes.length) preenchidos.push(aportes.length + ' aporte(s) GAMEL');
-  if(transferencias.length) preenchidos.push(transferencias.length + ' transferência(s) interna(s)');
+  if(transferencias.length) preenchidos.push(transferencias.length + ' transferência(s) entre lojas');
 
   let msg = `Extrato de ${formatDateBR(currentDate)} importado: ${lancamentos} lançamento(s) e ${saldosAnteriores} saldo(s) anterior(es). `
           + `Preenchi ${preenchidos.join('; ')}. `
@@ -2080,7 +2153,8 @@ function importarExtrato(rows, cols, statusEl){
   if(foraDoResultado) msg += ` Ficaram ${formatBRL(foraDoResultado)} fora do resultado operacional (aportes GAMEL, transferências internas e vendas no iFood), conforme as regras permanentes 4, 5 e 6.`;
   if(iFoodFora) msg += ` Desse total, ${formatBRL(iFoodFora)} são vendas no iFood.`;
   if(!aportes.length) msg += ' Não havia nenhum lançamento com categoria de aporte GAMEL neste extrato.';
-  if(!transferencias.length) msg += ` Não encontrei transferências internas: nenhuma saída tinha como favorecido uma das ${grupo.length} empresa(s) que aparecem na coluna Empresa deste extrato.`;
+  if(!transferencias.length) msg += ' Não havia nenhum lançamento com categoria de transferência entre lojas neste extrato.';
+  if(transfIndevidas) msg += ` ATENÇÃO: ${transfIndevidas} transferência(s), somando ${formatBRL(transfIndevidasValor)}, foram para contas que não estão na planilha de contas do grupo — estão marcadas na tabela de Transferências para você conferir.`;
   if(multiplasDatas) msg += ` Atenção: o arquivo tem lançamentos de mais de uma data; usei ${formatDateBR(currentDate)}, a mais frequente.`;
   if(planosIgnorados.size) msg += ` Planos de conta que não sei classificar: ${[...planosIgnorados].slice(0,4).join(', ')}${planosIgnorados.size>4?'…':''} — entraram nas saídas totais, mas não na composição.`;
   if(bancosIgnorados.size) msg += ` Bancos fora de Sicredi/Bradesco/Inter: ${[...bancosIgnorados].slice(0,4).join(', ')}${bancosIgnorados.size>4?'…':''} — contam no total e na tabela por loja, mas não têm bloco próprio no fechamento real.`;
