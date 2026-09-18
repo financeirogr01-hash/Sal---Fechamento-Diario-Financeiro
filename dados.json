@@ -827,6 +827,1057 @@
     "2026-09-15": {
       "publicadoEm": "2026-09-17T19:29:54.300Z",
       "autor": "Larissa"
+    },
+    "2026-09-16": {
+      "publicadoEm": "2026-09-18T12:04:03.354Z",
+      "autor": "Larissa"
+    }
+  },
+  "2026-09-16": {
+    "resumo": {
+      "saldoInicial": 19939.89,
+      "entradas": 96945.35,
+      "saidas": 270870.52
+    },
+    "despesasUrgentes": 0,
+    "composicaoSaidas": {
+      "cmv": 250508.04,
+      "cf": 0,
+      "cmo": 6291.12,
+      "opex": 1,
+      "royalties": 14070.36
+    },
+    "lojas": [
+      {
+        "unidade": "AMGEZA",
+        "banco": "iFood Pago",
+        "saldoInicial": 4798.7,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "AMGEZA",
+        "banco": "Inter Empresas",
+        "saldoInicial": -2742.78,
+        "entradas": 135.07,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIG FOME",
+        "banco": "iFood Pago",
+        "saldoInicial": 174.92,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIG FOME",
+        "banco": "Inter Empresas",
+        "saldoInicial": -4552.66,
+        "entradas": 2072.26,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 01",
+        "banco": "Sicredi",
+        "saldoInicial": 2724.53,
+        "entradas": 9418.97,
+        "saidas": 9734.19
+      },
+      {
+        "unidade": "BIGGS 02",
+        "banco": "iFood Pago",
+        "saldoInicial": 8604.59,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 02",
+        "banco": "Sicredi",
+        "saldoInicial": 1924.33,
+        "entradas": 9412.85,
+        "saidas": 11236.1
+      },
+      {
+        "unidade": "BIGGS 03",
+        "banco": "iFood Pago",
+        "saldoInicial": 10207.55,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 03",
+        "banco": "Sicredi",
+        "saldoInicial": 1318.48,
+        "entradas": 4670.54,
+        "saidas": 3874.91
+      },
+      {
+        "unidade": "BIGGS 04",
+        "banco": "Bradesco Empresas",
+        "saldoInicial": -7024.03,
+        "entradas": 32.29,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 04",
+        "banco": "iFood Pago",
+        "saldoInicial": 28189.97,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 04",
+        "banco": "Sicredi",
+        "saldoInicial": 1576.41,
+        "entradas": 10716.68,
+        "saidas": 19813.32
+      },
+      {
+        "unidade": "BIGGS 05",
+        "banco": "Bradesco Empresas",
+        "saldoInicial": -6751.93,
+        "entradas": 117.46,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 05",
+        "banco": "iFood Pago",
+        "saldoInicial": 9046.58,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 05",
+        "banco": "Sicredi",
+        "saldoInicial": 1967.41,
+        "entradas": 10221.77,
+        "saidas": 39957.89
+      },
+      {
+        "unidade": "BIGGS 06",
+        "banco": "Sicredi",
+        "saldoInicial": 649.83,
+        "entradas": 3595.66,
+        "saidas": 7135.17
+      },
+      {
+        "unidade": "BIGGS 07 E AÇAI",
+        "banco": "iFood Pago",
+        "saldoInicial": 38823.08,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 07 E AÇAI",
+        "banco": "Sicredi",
+        "saldoInicial": 1437.28,
+        "entradas": 9965.45,
+        "saidas": 48647.77
+      },
+      {
+        "unidade": "BIGGS 08 E 09",
+        "banco": "Sicredi",
+        "saldoInicial": 653.91,
+        "entradas": 6805.98,
+        "saidas": 6963.86
+      },
+      {
+        "unidade": "BIGGS 10",
+        "banco": "iFood Pago",
+        "saldoInicial": 47.83,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 10",
+        "banco": "Sicredi",
+        "saldoInicial": 1539.78,
+        "entradas": 4972.25,
+        "saidas": 7555.57
+      },
+      {
+        "unidade": "BIGGS 11",
+        "banco": "iFood Pago",
+        "saldoInicial": 112.63,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 11",
+        "banco": "Sicredi",
+        "saldoInicial": 963.63,
+        "entradas": 6588.02,
+        "saidas": 4539.23
+      },
+      {
+        "unidade": "BIGGS 12",
+        "banco": "iFood Pago",
+        "saldoInicial": 126.27,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 12",
+        "banco": "Sicredi",
+        "saldoInicial": 1655.7,
+        "entradas": 5412.48,
+        "saidas": 22952.44
+      },
+      {
+        "unidade": "BIGGS 13",
+        "banco": "iFood Pago",
+        "saldoInicial": 97.45,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "BIGGS 13",
+        "banco": "Sicredi",
+        "saldoInicial": 882.22,
+        "entradas": 2221.1,
+        "saidas": 6189.9
+      },
+      {
+        "unidade": "CORN FOOD",
+        "banco": "iFood Pago",
+        "saldoInicial": 118.19,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "DELLIRIS 04 (BG12)",
+        "banco": "iFood Pago",
+        "saldoInicial": 18.45,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "DONA FOOD",
+        "banco": "iFood Pago",
+        "saldoInicial": 118.16,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "ISAIAS 01",
+        "banco": "Sicredi",
+        "saldoInicial": 992.8,
+        "entradas": 1957.82,
+        "saidas": 25698.23
+      },
+      {
+        "unidade": "ISAIAS 02",
+        "banco": "iFood Pago",
+        "saldoInicial": 35.75,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "ISAIAS 02",
+        "banco": "Sicredi",
+        "saldoInicial": 1413.87,
+        "entradas": 916.7,
+        "saidas": 4479.87
+      },
+      {
+        "unidade": "ISAIAS 03",
+        "banco": "iFood Pago",
+        "saldoInicial": 33.45,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "ISAIAS 03",
+        "banco": "Sicredi",
+        "saldoInicial": 133.03,
+        "entradas": 4022.65,
+        "saidas": 26460.75
+      },
+      {
+        "unidade": "MAPOLI",
+        "banco": "Bradesco Empresas",
+        "saldoInicial": -14354.74,
+        "entradas": 27.52,
+        "saidas": 0
+      },
+      {
+        "unidade": "MAPOLI",
+        "banco": "Sicredi",
+        "saldoInicial": 233.53,
+        "entradas": 2777.12,
+        "saidas": 16815.17
+      },
+      {
+        "unidade": "ROBS",
+        "banco": "iFood Pago",
+        "saldoInicial": 48.96,
+        "entradas": 0,
+        "saidas": 0
+      },
+      {
+        "unidade": "ROBS",
+        "banco": "Sicredi",
+        "saldoInicial": -17.15,
+        "entradas": 804.07,
+        "saidas": 8816.15
+      },
+      {
+        "unidade": "SERBASE",
+        "banco": "Inter Empresas",
+        "saldoInicial": -3059.06,
+        "entradas": 80.64,
+        "saidas": 0
+      }
+    ],
+    "transferencias": {
+      "total": 423613.14,
+      "lista": [
+        {
+          "origem": "DELLIRIS 01 (IS01) — 01 DEL HUB FOODS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 2186.66,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "DELLIRIS 02 (IS02) — 02 DEL HUB FOODS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 10025.93,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "DELLIRIS 03 (BG02) — 03 DEL HUB FOODS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 6849.69,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "DELLIRIS 04 (BG12) — 04 DEL HUB FOODS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 3737.14,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 04 — AGAPE FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000532 BIG FOME LANCHES"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 04 — AGAPE FOODS LTDA",
+          "valor": 14999.99,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000532 BIG FOME LANCHES"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 04 — AGAPE FOODS LTDA",
+          "valor": 9773.69,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000532 BIG FOME LANCHES"
+        },
+        {
+          "origem": "SERBASE FOOD COME",
+          "destino": "BIGGS 04 — AGAPE FOODS LTDA",
+          "valor": 5702.66,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 03992652000229 SERBASE FOOD COME"
+        },
+        {
+          "origem": "BIGGS 07 E AÇAI — AMGEZA FOODS COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 07 E AÇAI — AMGEZA FOODS COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 1379.5,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "AMGEZA — AMGEZA FOODS COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 11487.62,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIG FOME — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIG FOME — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 14999.99,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIG FOME — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 4156.72,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 05 — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 9093.13,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 05 — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 05 — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 14163.89,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 03 — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 03 — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 6636.39,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 04 — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 04 — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 14999.99,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 04 — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 9773.69,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 02 — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 02 — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 1188.22,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 07 E AÇAI — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 07 E AÇAI — BIG FOME LANCHES LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 2634.38,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "AMGEZA FOODS COME",
+          "destino": "BIGGS 08 E 09 — BRUTI FOODS LTDA",
+          "valor": 11487.62,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 42874031000111 AMGEZA FOODS COME"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 05 — CHEMA FOODS LTDA",
+          "valor": 14163.89,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000702 BIG FOME LANCHES"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 05 — CHEMA FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000702 BIG FOME LANCHES"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 05 — CHEMA FOODS LTDA",
+          "valor": 9093.13,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000613 BIG FOME LANCHES"
+        },
+        {
+          "origem": "SERBASE FOOD COME",
+          "destino": "BIGGS 05 — CHEMA FOODS LTDA",
+          "valor": 3214.78,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 03992652000300 SERBASE FOOD COME"
+        },
+        {
+          "origem": "BIGGS 05 — CHEMA FOODS LTDA",
+          "destino": "PALADAR SERVICOS TERCEIRIZADOS LTDA",
+          "valor": 1690,
+          "descricao": "PAGAMENTO PIX 57895581000194 PALADAR SERVICOS TE"
+        },
+        {
+          "origem": "CORN FOOD — CORN FOOD COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "CORN FOOD — CORN FOOD COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 3750.1,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "ROLI FOODS LTDA",
+          "destino": "BIGGS 11 — DEMAQUI FOODS LTDA",
+          "valor": 12323.12,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 58423953000142 ROLI FOODS LTDA"
+        },
+        {
+          "origem": "ROLI FOODS LTDA",
+          "destino": "BIGGS 11 — DEMAQUI FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 58423953000142 ROLI FOODS LTDA"
+        },
+        {
+          "origem": "ISAIAS 02 — DONA FOOD COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 9242.28,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "DONA FOOD — DONA FOOD COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "DONA FOOD — DONA FOOD COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 7979.54,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "DONA FOOD — DONA FOOD COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 5394.74,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "ISAIAS 03 — DONA FOOD COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 5225.95,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "DONA FOOD COMERCI",
+          "destino": "ISAIAS 01 — ELMA FOODS LTDA",
+          "valor": 7979.54,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 44224264000447 DONA FOOD COMERCI"
+        },
+        {
+          "origem": "DONA FOOD COMERCI",
+          "destino": "ISAIAS 01 — ELMA FOODS LTDA",
+          "valor": 5394.74,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 44224264000102 DONA FOOD COMERCI"
+        },
+        {
+          "origem": "DONA FOOD COMERCI",
+          "destino": "ISAIAS 01 — ELMA FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 44224264000447 DONA FOOD COMERCI"
+        },
+        {
+          "origem": "01 DEL HUB FOODS",
+          "destino": "ISAIAS 01 — ELMA FOODS LTDA",
+          "valor": 2186.66,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 67053723000120 01 DEL HUB FOODS"
+        },
+        {
+          "origem": "ISAIAS 01 — ELMA FOODS LTDA",
+          "destino": "PALEZA SERVICOS TERCEIRIZADOS",
+          "valor": 380,
+          "descricao": "PAGAMENTO PIX 57895083000141 PALEZA SERVICOS TER"
+        },
+        {
+          "origem": "03 DEL HUB FOODS",
+          "destino": "BIGGS 02 — FUSI FOODS LTDA",
+          "valor": 6849.69,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 67050941000100 03 DEL HUB FOODS"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 02 — FUSI FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000370 BIG FOME LANCHES"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 02 — FUSI FOODS LTDA",
+          "valor": 1188.22,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000370 BIG FOME LANCHES"
+        },
+        {
+          "origem": "DONA FOOD COMERCI",
+          "destino": "ISAIAS 03 — JAPI FOODS LTDA",
+          "valor": 5225.95,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 44224264000528 DONA FOOD COMERCI"
+        },
+        {
+          "origem": "PANINES FOOD COME",
+          "destino": "ISAIAS 03 — JAPI FOODS LTDA",
+          "valor": 2672.08,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 52294908000159 PANINES FOOD COME"
+        },
+        {
+          "origem": "LANA FOODS LTDA",
+          "destino": "BIGGS 12 — LANA FOODS LTDA",
+          "valor": 15000,
+          "descricao": "RECEBIMENTO PIX 60928833000149 LANA FOODS LTDA"
+        },
+        {
+          "origem": "LANA FOODS LTDA",
+          "destino": "BIGGS 12 — LANA FOODS LTDA",
+          "valor": 10127.11,
+          "descricao": "RECEBIMENTO PIX 60928833000149 LANA FOODS LTDA"
+        },
+        {
+          "origem": "04 DEL HUB FOODS",
+          "destino": "BIGGS 12 — LANA FOODS LTDA",
+          "valor": 3737.14,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 67050802000187 04 DEL HUB FOODS"
+        },
+        {
+          "origem": "BIGGS 12 — LANA FOODS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 12 — LANA FOODS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 10127.11,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "LUAMA FOODS",
+          "destino": "ROBS — LUAMA FOODS COMERCIO DE ALIMENTOS LTDA",
+          "valor": 15000,
+          "descricao": "RECEBIMENTO PIX 52934334000136 Conta Desconhecid"
+        },
+        {
+          "origem": "LUAMA FOODS",
+          "destino": "ROBS — LUAMA FOODS COMERCIO DE ALIMENTOS LTDA",
+          "valor": 730.78,
+          "descricao": "RECEBIMENTO PIX 52934334000136 Conta Desconhecid"
+        },
+        {
+          "origem": "ROBS — LUAMA FOODS COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "ROBS — LUAMA FOODS COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 730.78,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "DONA FOOD COMERCI",
+          "destino": "ISAIAS 02 — MADRI FOODS LTDA",
+          "valor": 9242.28,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 44224264000285 DONA FOOD COMERCI"
+        },
+        {
+          "origem": "02 DEL HUB FOODS",
+          "destino": "ISAIAS 02 — MADRI FOODS LTDA",
+          "valor": 10025.93,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 67050893000150 02 DEL HUB FOODS"
+        },
+        {
+          "origem": "BIGGS 10 — MANUAM TREINAMENTOS EM FOOD SERVICE LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 1870.36,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 01 — MARTI FOODS LTDA",
+          "valor": 14999.99,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000109 BIG FOME LANCHES"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 01 — MARTI FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000109 BIG FOME LANCHES"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 01 — MARTI FOODS LTDA",
+          "valor": 4156.72,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000109 BIG FOME LANCHES"
+        },
+        {
+          "origem": "CHEMA FOODS LTDA",
+          "destino": "BIGGS 05 — PALADAR SERVICOS TERCEIRIZADOS LTDA",
+          "valor": 1690,
+          "descricao": "RECEBIMENTO PIX 58420923000182 CHEMA FOODS LTDA"
+        },
+        {
+          "origem": "ELMA FOODS LTDA",
+          "destino": "ISAIAS 01 — PALEZA SERVICOS TERCEIRIZADOS LTDA",
+          "valor": 380,
+          "descricao": "RECEBIMENTO PIX 60663757000197 ELMA FOODS LTDA"
+        },
+        {
+          "origem": "ISAIAS 03 — PANINES FOOD COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 2672.08,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "PAZORIA SERVICE F",
+          "destino": "BIGGS 10 — PANTI FOODS LTDA",
+          "valor": 14054.71,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 52935974000160 PAZORIA SERVICE F"
+        },
+        {
+          "origem": "MANUAM TREINAMENT",
+          "destino": "BIGGS 10 — PANTI FOODS LTDA",
+          "valor": 1870.36,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 52935281000178 MANUAM TREINAMENT"
+        },
+        {
+          "origem": "BIGGS 10 — PAZORIA SERVICE FOODS COMERCIO DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 14054.71,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 03 — PIGUI FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000451 BIG FOME LANCHES"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 03 — PIGUI FOODS LTDA",
+          "valor": 6636.39,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000451 BIG FOME LANCHES"
+        },
+        {
+          "origem": "BIGGS 13 — RAMA FOODS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 13 — RAMA FOODS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 412.49,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "RAMA FOODS LTDA",
+          "destino": "BIGGS 13 — RAMA FOODS LTDA",
+          "valor": 15000,
+          "descricao": "RECEBIMENTO PIX 60977372000102 RAMA FOODS LTDA"
+        },
+        {
+          "origem": "RAMA FOODS LTDA",
+          "destino": "BIGGS 13 — RAMA FOODS LTDA",
+          "valor": 412.49,
+          "descricao": "RECEBIMENTO PIX 60977372000102 RAMA FOODS LTDA"
+        },
+        {
+          "origem": "BIGGS 11 — ROLI FOODS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 11 — ROLI FOODS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 12323.12,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 05 — SERBASE FOOD COMERCIO ATACADISTA DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 3214.78,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 04 — SERBASE FOOD COMERCIO ATACADISTA DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 5702.66,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 07 E AÇAI — SERBASE FOOD COMERCIO ATACADISTA DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 07 E AÇAI — SERBASE FOOD COMERCIO ATACADISTA DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 14999.99,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIGGS 07 E AÇAI — SERBASE FOOD COMERCIO ATACADISTA DE ALIMENTOS LTDA",
+          "destino": "Pix Pix enviado",
+          "valor": 529.51,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: Pix Pix enviado"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 07 E AÇAI — SICA FOODS LTDA",
+          "valor": 2634.38,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000885 BIG FOME LANCHES"
+        },
+        {
+          "origem": "BIG FOME LANCHES",
+          "destino": "BIGGS 07 E AÇAI — SICA FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 14882853000885 BIG FOME LANCHES"
+        },
+        {
+          "origem": "SERBASE FOOD COME",
+          "destino": "BIGGS 07 E AÇAI — SICA FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 03992652000490 SERBASE FOOD COME"
+        },
+        {
+          "origem": "SERBASE FOOD COME",
+          "destino": "BIGGS 07 E AÇAI — SICA FOODS LTDA",
+          "valor": 14999.99,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 03992652000490 SERBASE FOOD COME"
+        },
+        {
+          "origem": "SERBASE FOOD COME",
+          "destino": "BIGGS 07 E AÇAI — SICA FOODS LTDA",
+          "valor": 529.51,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 03992652000490 SERBASE FOOD COME"
+        },
+        {
+          "origem": "AMGEZA FOODS COME",
+          "destino": "BIGGS 07 E AÇAI — SICA FOODS LTDA",
+          "valor": 1379.5,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 42874031000200 AMGEZA FOODS COME"
+        },
+        {
+          "origem": "AMGEZA FOODS COME",
+          "destino": "BIGGS 07 E AÇAI — SICA FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 42874031000200 AMGEZA FOODS COME"
+        },
+        {
+          "origem": "CORN FOOD COMERCI",
+          "destino": "BIGGS 06 — VERI FOODS LTDA",
+          "valor": 15000,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 42649933000154 CORN FOOD COMERCI"
+        },
+        {
+          "origem": "CORN FOOD COMERCI",
+          "destino": "BIGGS 06 — VERI FOODS LTDA",
+          "valor": 3750.1,
+          "descricao": "⚠️ FORA DA LISTA DE CONTAS — CONFERIR: RECEBIMENTO PIX 42649933000154 CORN FOOD COMERCI"
+        }
+      ]
+    },
+    "limites": {
+      "total": 0,
+      "emUso": 0,
+      "excedente": 0,
+      "disponivel": 0
+    },
+    "aportesGamel": {
+      "saldoInicial": 0,
+      "recebidos": 86273.9,
+      "enviados": 86273.9,
+      "outrasReceitas": 0,
+      "lista": [
+        {
+          "data": "16/09/2026",
+          "origem": "SICA FOODS LTDA",
+          "destino": "GAMEL",
+          "unidade": "BIGGS 07 E AÇAI",
+          "banco": "Sicredi",
+          "valor": 14037,
+          "tipo": "Aporte recebido",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "RECEBIMENTO PIX 58423590000145 SICA FOODS LTDA",
+          "perspectiva": "gamel"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "GAMEL",
+          "destino": "NEMAOM FOODS LTDA",
+          "unidade": "MAPOLI",
+          "banco": "Sicredi",
+          "valor": 14036.9,
+          "tipo": "Aporte enviado",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "PAGAMENTO PIX 57895291000140 NEMAOM FOODS LTDA",
+          "perspectiva": "gamel"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "SICA FOODS LTDA",
+          "destino": "GAMEL",
+          "unidade": "BIGGS 07 E AÇAI",
+          "banco": "Sicredi",
+          "valor": 20000,
+          "tipo": "Aporte recebido",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "RECEBIMENTO PIX 58423590000145 SICA FOODS LTDA",
+          "perspectiva": "gamel"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "GAMEL",
+          "destino": "JAPI FOODS LTDA",
+          "unidade": "ISAIAS 03",
+          "banco": "Sicredi",
+          "valor": 20000,
+          "tipo": "Aporte enviado",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "PAGAMENTO PIX 60403158000134 JAPI FOODS LTDA",
+          "perspectiva": "gamel"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "MARTI FOODS",
+          "destino": "GAMEL",
+          "unidade": "BIGGS 01",
+          "banco": "Sicredi",
+          "valor": 9100,
+          "tipo": "Aporte recebido",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "RECEBIMENTO PIX 60663917000106 MARTI FOODS LTDA",
+          "perspectiva": "gamel"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "GAMEL",
+          "destino": "SICA FOODS LTDA",
+          "unidade": "BIGGS 07 E AÇAI",
+          "banco": "Sicredi",
+          "valor": 9100,
+          "tipo": "Aporte enviado",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "PAGAMENTO PIX 58423590000145 SICA FOODS LTDA",
+          "perspectiva": "gamel"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "GAMEL SERVICOS TERCEIRIZADOS LTDA",
+          "destino": "GAMEL",
+          "unidade": "ISAIAS 03",
+          "banco": "Sicredi",
+          "valor": 20000,
+          "tipo": "Aporte recebido",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE",
+          "perspectiva": "loja"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "GAMEL",
+          "destino": "GAMEL SERVICOS TERCEIRIZADOS LTDA",
+          "unidade": "BIGGS 01",
+          "banco": "Sicredi",
+          "valor": 9100,
+          "tipo": "Aporte enviado",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC",
+          "perspectiva": "loja"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "GAMEL SERVICOS TERCEIRIZADOS LTDA",
+          "destino": "GAMEL",
+          "unidade": "MAPOLI",
+          "banco": "Sicredi",
+          "valor": 14036.9,
+          "tipo": "Aporte recebido",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE",
+          "perspectiva": "loja"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "GAMEL",
+          "destino": "GAMEL SERVICOS TERCEIRIZADOS LTDA",
+          "unidade": "BIGGS 07 E AÇAI",
+          "banco": "Sicredi",
+          "valor": 14037,
+          "tipo": "Aporte enviado",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC",
+          "perspectiva": "loja"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "GAMEL",
+          "destino": "GAMEL SERVICOS TERCEIRIZADOS LTDA",
+          "unidade": "BIGGS 07 E AÇAI",
+          "banco": "Sicredi",
+          "valor": 20000,
+          "tipo": "Aporte enviado",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "PAGAMENTO PIX 60927393000105 GAMEL SERVICOS TERC",
+          "perspectiva": "loja"
+        },
+        {
+          "data": "16/09/2026",
+          "origem": "GAMEL SERVICOS TERCEIRIZADOS LTDA",
+          "destino": "GAMEL",
+          "unidade": "BIGGS 07 E AÇAI",
+          "banco": "Sicredi",
+          "valor": 9100,
+          "tipo": "Aporte recebido",
+          "categoria": "Aporte - Transf. entre contas (GAMEL)",
+          "descricao": "RECEBIMENTO PIX 60927393000105 GAMEL SERVICOS TE",
+          "perspectiva": "loja"
+        }
+      ]
+    },
+    "projecaoSemana": {
+      "saldoInicial": 0,
+      "receitaPrevista": 0,
+      "despesaPrevista": 0,
+      "despesasUrgentes": 0
+    },
+    "fechamentoReal": {
+      "sicredi": {
+        "saldoInicial": 19939.89,
+        "entradas": 94480.11,
+        "saidas": 270870.52
+      },
+      "bradesco": {
+        "saldoInicial": -43701.84,
+        "entradas": 177.27,
+        "saidas": 0
+      },
+      "inter": {
+        "saldoInicial": -10883.64,
+        "entradas": 2287.97,
+        "saidas": 0
+      }
     }
   }
 }
