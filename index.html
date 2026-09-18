@@ -702,7 +702,7 @@
     <div class="card">
       <div class="label">Total movimentado</div>
       <input class="value money" id="transfTotal" value="520.14">
-      <div class="note">Movimentação interna do grupo, não considerada como receita ou despesa.</div>
+          <div class="note" id="transfResumo">Movimentação interna do grupo, não considerada como receita ou despesa.</div>
     </div>
     <button class="toggle-btn" id="btnTransf" onclick="toggleDetail('detailTransf','btnTransf')">
       <span class="chev">▾</span> Ver transferências por loja
@@ -710,11 +710,11 @@
     <div class="detail" id="detailTransf">
       <table>
         <thead>
-          <tr><th>Unidade origem</th><th>Unidade destino</th><th>Valor</th><th>Descrição</th><th></th></tr>
+          <tr><th>Tipo</th><th>Unidade origem</th><th>Unidade destino</th><th>Valor</th><th>Descrição</th><th></th></tr>
         </thead>
         <tbody id="transfBody"></tbody>
         <tfoot>
-          <tr><td colspan="2">Total</td><td id="totTransf">R$ 0,00</td><td></td><td></td></tr>
+          <tr><td colspan="3">Total</td><td id="totTransf">R$ 0,00</td><td></td><td></td></tr>
         </tfoot>
       </table>
       <button class="add-row-btn" onclick="addTransfRow()">+ Adicionar transferência</button>
@@ -1112,6 +1112,7 @@ function readInputsToState(){
   }));
 
   state.transferencias.lista = Array.from(document.querySelectorAll('#transfBody tr')).map(tr=>({
+    tipo: tr.querySelector('.f-tipo') ? tr.querySelector('.f-tipo').value : 'Entrada',
     origem: tr.querySelector('.f-origem').value,
     destino: tr.querySelector('.f-destino').value,
     valor: parseBRL(tr.querySelector('.f-valor').value),
@@ -1204,6 +1205,7 @@ function renderTransf(){
     const tr = document.createElement('tr');
     tr.dataset.idx = idx;
     tr.innerHTML = `
+      <td><select class="f-tipo"><option${t.tipo === 'Saída' ? '' : ' selected'}>Entrada</option><option${t.tipo === 'Saída' ? ' selected' : ''}>Saída</option></select></td>
       <td><input class="f-origem" value="${escapeHtml(t.origem||'')}" placeholder="Origem"></td>
       <td><input class="f-destino" value="${escapeHtml(t.destino||'')}" placeholder="Destino"></td>
       <td><input class="f-valor money-cell" value="${brlInput(t.valor)}"></td>
@@ -1524,8 +1526,20 @@ function recalc(){
   document.getElementById('totLojaSaldoFinal').textContent = formatBRL(totFinal);
 
   // Total das transferências detalhadas
-  const totTransfLista = state.transferencias.lista.reduce((a,t)=>a+t.valor,0);
-  document.getElementById('totTransf').textContent = formatBRL(totTransfLista);
+  // O detalhamento traz as duas pontas de cada transferência, então somar tudo contaria o
+  // dinheiro duas vezes. O "movimentado" é um lado só — as entradas, quando existem.
+  const transfEn = state.transferencias.lista.filter(t=>t.tipo !== 'Saída').reduce((a,t)=>a+t.valor,0);
+  const transfSa = state.transferencias.lista.filter(t=>t.tipo === 'Saída').reduce((a,t)=>a+t.valor,0);
+  const totTransfLista = (transfEn && transfSa) ? transfEn : (transfEn || transfSa);
+  const elTransfResumo = document.getElementById('transfResumo');
+  if(elTransfResumo){
+    elTransfResumo.textContent = state.transferencias.lista.length
+      ? `${formatBRL(transfEn)} de entrada e ${formatBRL(transfSa)} de saída, em ${state.transferencias.lista.length} lançamento(s). Movimentação interna do grupo, não considerada como receita ou despesa.`
+      : 'Movimentação interna do grupo, não considerada como receita ou despesa.';
+  }
+  document.getElementById('totTransf').textContent = state.transferencias.lista.length
+    ? `${formatBRL(transfEn)} entrada · ${formatBRL(transfSa)} saída`
+    : formatBRL(0);
 
   // Totais dos aportes detalhados
   const totApRec = state.aportesGamel.lista.filter(a=>a.tipo==='Aporte recebido').reduce((a,r)=>a+Math.abs(r.valor),0);
@@ -1610,7 +1624,7 @@ function removeLojaRow(idx){
 }
 function addTransfRow(){
   readInputsToState();
-  state.transferencias.lista.push({origem:'', destino:'', valor:0, descricao:''});
+  state.transferencias.lista.push({tipo:'Entrada', origem:'', destino:'', valor:0, descricao:''});
   renderTransf(); recalc(); persist();
 }
 function removeTransfRow(idx){
@@ -1853,12 +1867,24 @@ const CONTAS_GRUPO = {
 const CNPJ_APORTE = '60927393000105'; // GAMEL SERVICOS TERCEIRIZADOS LTDA
 
 function soDigitos(v){ return String(v == null ? '' : v).replace(/[^0-9]/g, ''); }
+// Raiz do CNPJ: os 8 primeiros dígitos, que são iguais em todas as filiais da mesma empresa.
+// A comparação tem que ser por aqui — a AMGEZA recebe num 42.874.031/0001-11 e paga de um
+// 42.874.031/0002-00; pelo CNPJ inteiro seriam duas empresas diferentes.
+function raizCnpj(v){ const d = soDigitos(v); return d.length >= 8 ? d.slice(0, 8) : ''; }
 // CNPJs (14) e CPFs (11) citados numa descrição de Pix/TED.
 function documentosNaDescricao(desc){ return String(desc || '').match(/[0-9]{11,14}/g) || []; }
-// A primeira conta do grupo citada na descrição, se houver.
-function contaDoGrupoNaDescricao(desc){
+// A primeira conta do grupo citada na descrição. Procura na planilha de contas do Sicredi e
+// também nas empresas que aparecem no próprio extrato — o grupo tem conta em quatro bancos e
+// a planilha só cobre o Sicredi.
+function contaDoGrupoNaDescricao(desc, raizesDoExtrato){
   for(const doc of documentosNaDescricao(desc)){
     if(CONTAS_GRUPO[doc]) return { cnpj: doc, ...CONTAS_GRUPO[doc] };
+    const raiz = raizCnpj(doc);
+    if(!raiz) continue;
+    for(const cnpj in CONTAS_GRUPO){
+      if(raizCnpj(cnpj) === raiz) return { cnpj: doc, ...CONTAS_GRUPO[cnpj] };
+    }
+    if(raizesDoExtrato && raizesDoExtrato[raiz]) return { cnpj: doc, nome: raizesDoExtrato[raiz] };
   }
   return null;
 }
@@ -1907,11 +1933,19 @@ function importarExtrato(rows, cols, statusEl){
   // De qual loja é cada CNPJ — sai do próprio extrato, que traz Empresa, CNPJ e Loja lado a lado.
   // Serve para dizer qual loja emprestou e qual recebeu num aporte lançado na conta GAMEL.
   const lojaPorCnpj = {};
+  const lojaPorRaiz = {};
+  // Empresas do grupo que aparecem neste extrato, por raiz de CNPJ — é o que permite
+  // reconhecer transferência para conta de outro banco (iFood Pago, Inter, Bradesco), que
+  // não está na planilha do Sicredi.
+  const raizesDoExtrato = {};
   for(let i = cols.headerRow + 1; i < rows.length; i++){
     if(!rows[i]) continue;
     const doc = soDigitos(cel(rows[i], cols.cnpj));
     const lj  = String(cel(rows[i], cols.loja) || '').trim();
     if(doc.length === 14 && lj && lj !== '—' && !lojaPorCnpj[doc]) lojaPorCnpj[doc] = lj;
+    const raiz = raizCnpj(doc);
+    if(raiz && !raizesDoExtrato[raiz]) raizesDoExtrato[raiz] = String(cel(rows[i], cols.empresa) || '').trim();
+    if(raiz && lj && lj !== '—' && !lojaPorRaiz[raiz]) lojaPorRaiz[raiz] = lj;
   }
 
   for(let i = cols.headerRow + 1; i < rows.length; i++){
@@ -1949,7 +1983,7 @@ function importarExtrato(rows, cols, statusEl){
     const empresaNome = String(cel(row, cols.empresa) || '').trim();
 
     const cnpjDaLinha = soDigitos(cel(row, cols.cnpj));
-    const contaParte  = contaDoGrupoNaDescricao(desc);   // a outra ponta, quando é do grupo
+    const contaParte  = contaDoGrupoNaDescricao(desc, raizesDoExtrato); // a outra ponta, se do grupo
     const ehContaAporte = cnpjDaLinha === CNPJ_APORTE;   // a linha é do extrato da própria GAMEL
 
     // Regra permanente 4: categoria de aporte = uma loja emprestando para outra pela conta
@@ -1996,18 +2030,23 @@ function importarExtrato(rows, cols, statusEl){
     if(catNormPre.includes('transf') && catNormPre.includes('loja')){
       const v = Math.abs(valorPre);
       if(v > 0){
-        // A outra ponta precisa ser uma das contas da planilha "contas sicredi". Se não for,
-        // a transferência é sinalizada para conferência.
-        const permitida = !!contaParte;
-        const outraPonta = (contaParte && contaParte.nome) || contraparteDaDescricao(desc);
+        // Só dá para dizer que a transferência é irregular quando a descrição traz o CNPJ da
+        // outra ponta. Muitas vêm como "Pix Pix enviado", sem identificação nenhuma — essas
+        // ficam sem destino, e marcá-las como indevidas seria alarme falso.
+        const temDoc = documentosNaDescricao(desc).some(d => d.length === 14);
+        const forinha = temDoc && !contaParte;
+        const estaConta = [lojaNome, empresaNome].filter(Boolean).join(' — ') || '—';
+        const outraPonta = (contaParte && contaParte.nome)
+          || (temDoc ? contraparteDaDescricao(desc) : '(não identificada no extrato)');
         transferencias.push({
-          origem: entradaPre ? outraPonta : ([lojaNome, empresaNome].filter(Boolean).join(' — ') || '—'),
-          destino: entradaPre ? ([lojaNome, empresaNome].filter(Boolean).join(' — ') || '—') : outraPonta,
+          tipo: entradaPre ? 'Entrada' : 'Saída',
+          origem: entradaPre ? outraPonta : estaConta,
+          destino: entradaPre ? estaConta : outraPonta,
           valor: v,
-          descricao: (permitida ? '' : '⚠️ FORA DA LISTA DE CONTAS — CONFERIR: ') + desc
+          descricao: (forinha ? '⚠️ CONTA FORA DO GRUPO — CONFERIR: ' : '') + desc
         });
         if(entradaPre) transfEntradas += v; else transfSaidas += v;
-        if(!permitida){ transfIndevidas++; transfIndevidasValor += v; }
+        if(forinha){ transfIndevidas++; transfIndevidasValor += v; }
         totalTransferencias += v;
         foraDoResultado += v;
       }
@@ -2163,7 +2202,8 @@ function importarExtrato(rows, cols, statusEl){
   msg += ' Saldo inicial digitado a mão não é sobrescrito nas importações seguintes.';
   if(!aportes.length) msg += ' Não havia nenhum lançamento com categoria de aporte GAMEL neste extrato.';
   if(!transferencias.length) msg += ' Não havia nenhum lançamento com categoria de transferência entre lojas neste extrato.';
-  if(transfIndevidas) msg += ` ATENÇÃO: ${transfIndevidas} transferência(s), somando ${formatBRL(transfIndevidasValor)}, foram para contas que não estão na planilha de contas do grupo — estão marcadas na tabela de Transferências para você conferir.`;
+  if(transferencias.length) msg += ` Transferências entre lojas: ${formatBRL(transfEntradas)} de entrada e ${formatBRL(transfSaidas)} de saída.`;
+  if(transfIndevidas) msg += ` ATENÇÃO: ${transfIndevidas} transferência(s), somando ${formatBRL(transfIndevidasValor)}, citam um CNPJ que não é de nenhuma empresa do grupo — estão marcadas na tabela de Transferências para você conferir.`;
   if(multiplasDatas) msg += ` Atenção: o arquivo tem lançamentos de mais de uma data; usei ${formatDateBR(currentDate)}, a mais frequente.`;
   if(planosIgnorados.size) msg += ` Planos de conta que não sei classificar: ${[...planosIgnorados].slice(0,4).join(', ')}${planosIgnorados.size>4?'…':''} — entraram nas saídas totais, mas não na composição.`;
   if(bancosIgnorados.size) msg += ` Bancos fora de Sicredi/Bradesco/Inter: ${[...bancosIgnorados].slice(0,4).join(', ')}${bancosIgnorados.size>4?'…':''} — contam no total e na tabela por loja, mas não têm bloco próprio no fechamento real.`;
